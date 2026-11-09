@@ -30,6 +30,5 @@ uploads/
 *.md
 !README.md
 tests/
-scripts/
 celerybeat-schedule*
 celerybeat.pid

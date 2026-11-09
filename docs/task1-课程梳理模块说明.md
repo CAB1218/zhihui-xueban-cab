@@ -127,3 +127,21 @@
 - `src/views/curriculum/CurriculumOutlineView.vue` — 课程梳理页面
 - `src/router/routes/scene-routes.ts` — 路由注册
 - `src/components/layout/Sidebar.vue` — 侧边栏入口
+
+## 7. 本地实测记录（2026-11-09，Docker 全栈）
+
+在 Windows 11 + Docker Desktop 环境按 README「方式 A」完整跑通，实测结果：
+
+| 检查项 | 结果 |
+|---|---|
+| 10 个容器 | 全部 Up，其中 postgres / neo4j / redis / minio / elasticsearch / clickhouse 为 healthy |
+| 数据库迁移 | `alembic upgrade head` 通过 6 个版本，含本模块的 `f6b7c8d9e401`（curriculum_outlines） |
+| 默认账号登录 | `admin@ai4edu.com / admin123` → 200，返回 access_token |
+| 生成大纲（`fallback_sample=true`，无 LLM Key） | 200，0.03s 返回：5 单元 / 18 条内容 / 8 条联系 / 3 个出处，落库 id=1 |
+| JSON 导出 | 200，11,862 B |
+| Markdown 导出 | 200，8,235 B，标题/范围/单元表格/联系/出处齐全 |
+| Word 导出 | 200，40,198 B，ZIP 头 `PK` 校验为合法 docx |
+| 前端经 nginx（80 口）代理调用 | 列表与导出均 200，`/api/v1` 代理链路正常 |
+| 知识图谱 | 11 个 KnowledgeNode / 13 条关系，`/graphs/subjects/math/graph` 返回 7 节点 12 链接 |
+
+配置 LLM Key 后，同一接口会走「联网检索 + 大模型梳理」的真实链路（首次约 30~90 秒）。

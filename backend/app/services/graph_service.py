@@ -62,6 +62,22 @@ def _strength_label(strength: float) -> str:
     return "弱"
 
 
+def _neo4j_safe_props(data: Dict[str, Any]) -> Dict[str, Any]:
+    """把 dict / list 属性序列化为 JSON 字符串。
+
+    Neo4j 只接受原始类型（及由原始类型构成的数组）作为属性值，
+    直接写入 map 会抛 `Property values can only be of primitive types`。
+    读取侧（如 cognitive_level）已按「字符串 → json.loads」处理。
+    """
+    safe: Dict[str, Any] = {}
+    for key, value in data.items():
+        if isinstance(value, (dict, list)):
+            safe[key] = json.dumps(value, ensure_ascii=False)
+        else:
+            safe[key] = value
+    return safe
+
+
 class GraphService:
     """知识图谱服务"""
 
@@ -472,16 +488,27 @@ class GraphService:
         """
         创建知识节点
         """
-        props = ", ".join(f"{k}: ${k}" for k in node_data.keys())
+        # Neo4j 属性只支持原始类型/数组，dict、list 需序列化为 JSON 字符串
+        # （cognitive_level 等在读取侧由 json.loads 还原）
+        node_data = _neo4j_safe_props(node_data)
+        # 学科既可以用 id（math）也可以用中文名（数学）传入，统一归一化为 id，
+        # 否则会建出 subject_数学 这类与接口查询不一致的隐藏学科节点
+        raw_subject = node_data.get("subject")
         subject = next(
-            (item for item in SUBJECT_CATEGORIES if item["id"] == node_data.get("subject")),
+            (
+                item
+                for item in SUBJECT_CATEGORIES
+                if item["id"] == raw_subject or item["name"] == raw_subject
+            ),
             {
-                "id": str(node_data.get("subject", "unknown")),
-                "name": str(node_data.get("subject", "unknown")),
+                "id": str(raw_subject or "unknown"),
+                "name": str(raw_subject or "unknown"),
                 "icon": "Reading",
                 "color": "#5B8FF9",
             },
         )
+        node_data["subject"] = subject["id"]
+        props = ", ".join(f"{k}: ${k}" for k in node_data.keys())
         cypher = (
             f"CREATE (n:KnowledgeNode {{{props}}}) "
             "WITH n MERGE (s:Subject {id: $subject_node_id}) "
@@ -504,6 +531,7 @@ class GraphService:
         """
         更新知识节点属性
         """
+        update_data = _neo4j_safe_props(update_data)
         set_clauses = ", ".join(f"n.{k} = ${k}" for k in update_data.keys())
         params = {"node_id": node_id, **update_data}
         cypher = f"MATCH (n:KnowledgeNode {{id: $node_id}}) SET {set_clauses} RETURN n"

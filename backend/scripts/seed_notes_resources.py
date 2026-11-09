@@ -4,15 +4,16 @@
 """
 import pg8000
 import json
+import os
 from datetime import datetime, timezone
 
-# DB config
+# DB config — 优先读环境变量，容器内由 docker-compose 注入（POSTGRES_HOST=postgres）
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 5432,
-    "database": "ai4edu",
-    "user": "ai4edu",
-    "password": "ai4edu_password",
+    "host": os.getenv("POSTGRES_HOST", "localhost"),
+    "port": int(os.getenv("POSTGRES_PORT", "5432")),
+    "database": os.getenv("POSTGRES_DB", "ai4edu"),
+    "user": os.getenv("POSTGRES_USER", "ai4edu"),
+    "password": os.getenv("POSTGRES_PASSWORD", "ai4edu_password"),
 }
 
 def get_conn():

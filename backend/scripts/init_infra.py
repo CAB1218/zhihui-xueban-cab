@@ -4,6 +4,7 @@ AI4Edu 基础设施业务初始化脚本
 """
 import json
 import logging
+import os
 import sys
 
 import httpx
@@ -12,18 +13,18 @@ import httpx
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
-# 基础设施配置
-CLICKHOUSE_HOST = "localhost"
+# 基础设施配置 — 优先读环境变量，容器内由 docker-compose 注入
+CLICKHOUSE_HOST = os.getenv("CLICKHOUSE_HOST", "localhost")
 CLICKHOUSE_HTTP_PORT = 8123
-CLICKHOUSE_USER = "default"
-CLICKHOUSE_PASSWORD = "clickhouse_password"
+CLICKHOUSE_USER = os.getenv("CLICKHOUSE_USER", "default")
+CLICKHOUSE_PASSWORD = os.getenv("CLICKHOUSE_PASSWORD", "clickhouse_password")
 CLICKHOUSE_DB = "ai4edu"
 
-ELASTICSEARCH_HOST = "http://localhost:9200"
+ELASTICSEARCH_HOST = os.getenv("ELASTICSEARCH_HOST", "http://localhost:9200")
 
-MINIO_ENDPOINT = "localhost:9002"
-MINIO_ACCESS_KEY = "minioadmin"
-MINIO_SECRET_KEY = "minioadmin"
+MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9002")
+MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
+MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadmin")
 
 
 # ==================== ClickHouse 初始化 ====================

@@ -82,7 +82,7 @@ AI4EDU 是面向**大学本科生**的 AI 智慧教学平台，核心场景包�
 
 | 端口 | 服务 | 备注 |
 |---|---|---|
-| **3000** | 前端（Nginx 容器） | 仅 Docker 部署时使用 |
+| **80** | 前端（Nginx 容器） | Docker 部署时访问 http://localhost，即 compose 里的 `80:80` |
 | **5173** | Vite Dev Server | 本地前端开发（**前端联调时使用**） |
 | **8000** | FastAPI 后端 | API 根入口 |
 | **5432** | PostgreSQL | 数据库 |
@@ -102,38 +102,57 @@ AI4EDU 是面向**大学本科生**的 AI 智慧教学平台，核心场景包�
 ### 方式 A：Docker Compose 一键起（推荐）
 
 **适用场景**：快速验证整个平台是否跑通，不需要频繁改代码。
+**实测环境**：Windows 11 + Docker Desktop（引擎 29.9）+ Compose v5.6，Linux 容器模式。
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/CAG1218/ai4edu.git
-cd ai4edu
+git clone https://github.com/CAB1218/zhihui-xueban-cab.git
+cd zhihui-xueban-cab
 
-# 2. （可选）准备后端环境变量
-# 注意：项目本身已经提供了 docker-compose 中的默认值（仅开发用）。
-# 若要自定义，可以从以下文件复制（仓库里未提供示例，但代码已内置默认）：
-#   backend/.env  ← 可选，覆盖默认配置
+# 2. 构建前端静态产物（nginx 挂载的是 frontend/dist，仓库不含产物，必须先构建）
+cd frontend
+npm install
+npx vite build        # 注意：不要用 npm run build，它会先跑 vue-tsc 类型检查，
+                      # 仓库里存在若干历史 TS 报错会直接中断构建
+cd ..
 
-# 3. 一键启动所有服务（前端 + 后端 + 7 个中间件）
+# 3. （可选）后端环境变量：不建也能启动（config.py 有默认值），
+#    只有要用 AI 大模型功能时才需要填 Key
+cp backend/.env.example backend/.env
+#   然后编辑 backend/.env，填入 DEEPSEEK_API_KEY / QWEN_API_KEY / HUNYUAN_API_KEY 之一
+
+# 4. 启动全部 10 个容器（首次要构建后端镜像并装依赖，约 6~8 分钟）
 cd deploy
 docker compose up -d --build
+docker compose ps     # 等到 postgres / neo4j / redis / minio / elasticsearch / clickhouse 都是 healthy
 
-# 4. 查看启动状态
-docker compose ps
-# 应该看到以下 8 个服务都是 healthy 或 Up：
-#   ai4edu-frontend, ai4edu-backend, ai4edu-postgres, ai4edu-neo4j,
-#   ai4edu-redis, ai4edu-minio, ai4edu-elasticsearch, ai4edu-clickhouse,
-#   ai4edu-celery-worker, ai4edu-celery-beat
+# 5. 建表（必须执行，否则接口会 500）
+docker compose exec backend alembic upgrade head
 
-# 5. 初始化数据库 + 种子数据（仅首次启动需要）
-docker exec -it ai4edu-backend python scripts/seed_data.py
-docker exec -it ai4edu-backend python scripts/seed_notes_resources.py
+# 6. 初始化数据（仅首次）
+docker compose exec backend python scripts/seed_data.py             # 角色/权限/租户/默认账号
+docker compose exec backend python scripts/init_infra.py            # ClickHouse 表 / ES 索引 / MinIO bucket
+docker compose exec backend python scripts/seed_knowledge_graph.py  # Neo4j 数学·物理知识图谱
+docker compose exec backend python scripts/seed_notes_resources.py  # 笔记与资源示例
 
-# 6. 访问
-# 前端：http://localhost:3000
-# 后端 API：http://localhost:8000/docs
-# Neo4j Browser：http://localhost:7474
-# MinIO Console：http://localhost:9003
+# 7. 访问
+# 前端：          http://localhost
+# 后端 API 文档：  http://localhost:8000/docs
+# Neo4j Browser： http://localhost:7474
+# MinIO 控制台：   http://localhost:9003
+# 默认账号：      admin@ai4edu.com / admin123
 ```
+
+**已踩过的坑（本仓库已修好，自行部署时对照排查）**
+
+| 现象 | 原因 | 处理 |
+|---|---|---|
+| `pull access denied for minio/minio` | 官方镜像 2025 年已从 Docker Hub 下架 | compose 已改用 `bitnamilegacy/minio` |
+| 后端启动报 `error parsing value for field "CORS_ORIGINS"` | `CORS_ORIGINS` 是 List 字段，必须写成 JSON 数组 | 见 `.env.example` 里的写法 |
+| `docker exec ... scripts/seed_data.py` 报文件不存在 | `.dockerignore` 曾排除 `scripts/` | 已改为打进镜像 |
+| 前端页面空白 / 404 | nginx 挂载 `frontend/dist`，仓库里没有构建产物 | 先执行上面第 2 步 |
+| 知识图谱节点写入报 `Property values can only be of primitive types` | Neo4j 5 不允许 map 作为属性值 | `create_node` 已自动把 dict/list 序列化为 JSON 字符串 |
+
 
 **停止 / 重启**：
 ```bash

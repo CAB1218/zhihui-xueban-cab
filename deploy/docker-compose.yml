@@ -23,7 +23,10 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ../backend/.env
+      # backend/.env 不入库（含 API Key）。缺失时回退到 app/config.py 默认值，
+      # 容器内的 host 相关配置由下方 environment 覆盖，因此没有 .env 也能启动。
+      - path: ../backend/.env
+        required: false
     environment:
       - POSTGRES_HOST=postgres
       - NEO4J_URI=bolt://neo4j:7687
@@ -53,7 +56,10 @@ services:
     container_name: ai4edu-celery-worker
     command: celery -A app.core.celery_app worker --loglevel=info --concurrency=4
     env_file:
-      - ../backend/.env
+      # backend/.env 不入库（含 API Key）。缺失时回退到 app/config.py 默认值，
+      # 容器内的 host 相关配置由下方 environment 覆盖，因此没有 .env 也能启动。
+      - path: ../backend/.env
+        required: false
     environment:
       - POSTGRES_HOST=postgres
       - NEO4J_URI=bolt://neo4j:7687
@@ -81,7 +87,10 @@ services:
     container_name: ai4edu-celery-beat
     command: celery -A app.core.celery_app beat --loglevel=info
     env_file:
-      - ../backend/.env
+      # backend/.env 不入库（含 API Key）。缺失时回退到 app/config.py 默认值，
+      # 容器内的 host 相关配置由下方 environment 覆盖，因此没有 .env 也能启动。
+      - path: ../backend/.env
+        required: false
     environment:
       - POSTGRES_HOST=postgres
       - NEO4J_URI=bolt://neo4j:7687
@@ -203,17 +212,22 @@ services:
 
   # ============ MinIO ============
   minio:
-    image: minio/minio:latest
+    # 注意：官方 minio/minio 镜像已于 2025 年从 Docker Hub 下架（pull 会 403），
+    # 改用 Bitnami 打包的同版本 minio 服务端（API、控制台端口与用法完全一致）
+    image: bitnamilegacy/minio:latest
     container_name: ai4edu-minio
+    user: "0:0"   # 数据卷由 root 创建，需以 root 运行才能初始化
     ports:
       - "9002:9000"
       - "9003:9001"
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_DATA_DIR: /data
+      MINIO_API_PORT_NUMBER: "9000"
+      MINIO_CONSOLE_PORT_NUMBER: "9001"
     volumes:
       - minio_data:/data
-    command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
