@@ -113,7 +113,7 @@
  */
 import { ref, reactive, nextTick, onMounted } from 'vue'
 import { Promotion, Sunny } from '@element-plus/icons-vue'
-import { getBuddyProfile, chatWithBuddy, encourageBuddy } from '@/services/buddy'
+import { getBuddyProfile, chatWithBuddy, encourageBuddy, getBuddyMood } from '@/services/buddy'
 import { ElMessage } from 'element-plus'
 
 const inputMessage = ref<string>('')

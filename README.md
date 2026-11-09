@@ -153,6 +153,9 @@ docker compose exec backend python scripts/seed_notes_resources.py  # 笔记与�
 | 前端页面空白 / 404 | nginx 挂载 `frontend/dist`，仓库里没有构建产物 | 先执行上面第 2 步 |
 | 知识图谱节点写入报 `Property values can only be of primitive types` | Neo4j 5 不允许 map 作为属性值 | `create_node` 已自动把 dict/list 序列化为 JSON 字符串 |
 | celery-worker 反复重启，报 `Redis transport requires redis-py versions 6.1.0 or later` | kombu 5.6+ 与固定的 redis==5.0.4 不兼容 | requirements 已锁定 `kombu==5.4.0` |
+| 单独重启 backend 后前端所有接口 502 | nginx 启动时缓存了后端容器旧 IP | nginx 已改为 `resolver 127.0.0.11 valid=10s` + 变量 proxy_pass，自动跟随容器 IP |
+| 点击「课堂模式」报 `navigateTo is not a function` | 侧边栏模板绑定了未定义的 `navigateTo` | 已移除（el-menu 的 router 模式本身就会跳转） |
+| 页面弹「请求的资源不存在」 | 前端重复拼了 `/api/v1` 前缀 | 已修正，axios 实例 baseURL 已含前缀 |
 
 
 **停止 / 重启**：

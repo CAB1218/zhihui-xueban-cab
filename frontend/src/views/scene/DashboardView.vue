@@ -98,7 +98,8 @@ onMounted(async () => {
   // 获取仪表盘统计
   try {
     // api 响应拦截器已解包 axios，res = {code, data: stats, message}
-    const res = await api.get('/api/v1/dashboard/stats') as any
+    // 注意：axios 实例的 baseURL 已是 /api/v1，此处不能再带前缀，否则会请求 /api/v1/api/v1/...
+    const res = await api.get('/dashboard/stats') as any
     if (res.data) {
       dashboardStats.value = res.data
     }

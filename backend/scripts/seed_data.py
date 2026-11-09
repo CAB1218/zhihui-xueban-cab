@@ -81,6 +81,42 @@ DEFAULT_ROLES = [
     {"name": "student", "display_name": "学生", "description": "学生角色，可学习、做笔记、参与讨论", "is_system": True},
 ]
 
+# 示例课程（classrooms/growth 等模块依赖 courses 外键，缺数据会直接 500）
+DEFAULT_COURSES = [
+    {
+        "name": "高等数学（上）",
+        "code": "MATH101",
+        "subject": "math",
+        "grade": "大一",
+        "semester": "2026-fall",
+        "description": "函数、极限、导数与积分，配套数学知识图谱。",
+    },
+    {
+        "name": "大学物理",
+        "code": "PHYS101",
+        "subject": "physics",
+        "grade": "大一",
+        "semester": "2026-fall",
+        "description": "力学、电磁学基础，配套物理知识图谱。",
+    },
+    {
+        "name": "数据结构",
+        "code": "CS201",
+        "subject": "cs",
+        "grade": "大二",
+        "semester": "2026-fall",
+        "description": "线性表、树、图与常用算法。",
+    },
+    {
+        "name": "线性代数",
+        "code": "MATH201",
+        "subject": "math",
+        "grade": "大一",
+        "semester": "2026-fall",
+        "description": "矩阵、行列式、向量空间与线性变换。",
+    },
+]
+
 # 40 个权限定义（8 个模块，每模块 5 个）
 DEFAULT_PERMISSIONS = [
     # ---- 认证模块 (auth) ----
@@ -320,6 +356,31 @@ async def seed_data():
                     rp_count += 1
 
         print(f"角色-权限映射已创建，新增 {rp_count} 条")
+
+        # 7. 创建示例课程（课堂互动 / 教师工作台依赖 courses，缺数据会外键失败）
+        print("创建示例课程...")
+        from app.models.course import Course
+
+        result = await session.execute(select(User).where(User.email == "admin@ai4edu.com"))
+        teacher_user = result.scalars().first()
+        teacher_id = teacher_user.id if teacher_user else 1
+
+        for course_data in DEFAULT_COURSES:
+            result = await session.execute(
+                select(Course).where(Course.code == course_data["code"])
+            )
+            if result.scalars().first():
+                print(f"课程 '{course_data['name']}' 已存在")
+                continue
+            session.add(
+                Course(
+                    tenant_id=tenant_id,
+                    teacher_id=teacher_id,
+                    is_active=True,
+                    **course_data,
+                )
+            )
+            print(f"课程 '{course_data['name']}' 已创建")
 
         await session.commit()
 

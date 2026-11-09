@@ -63,7 +63,7 @@ export const useClassroomStore = defineStore('classroom', () => {
   async function createClassroom(name: string, courseId?: number): Promise<ClassroomInfo | null> {
     loading.value = true
     try {
-      const classroom = await classroomApi.createClassroom({ name, course_id: courseId })
+      const classroom = await classroomApi.createClassroom({ title: name, course_id: courseId })
       currentClassroom.value = classroom
       ElMessage.success('课堂创建成功')
       return classroom

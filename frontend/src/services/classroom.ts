@@ -60,8 +60,11 @@ export interface ClassroomMessage {
 }
 
 export interface CreateClassroomParams {
-  name: string
+  /** 课堂主题，对应后端 ClassroomCreate.title */
+  title: string
+  /** 后端必填：所属课程 ID */
   course_id?: number
+  description?: string
   max_participants?: number
 }
 
@@ -75,52 +78,53 @@ export interface CreatePollParams {
 export const classroomApi = {
   /** 创建课堂 */
   async createClassroom(params: CreateClassroomParams): Promise<ClassroomInfo> {
-    const response = await api.post('/classroom', params)
+    // 后端注册在 /classrooms（复数）下，POST 路由为 "/"，故带尾斜杠避免 307
+    const response = await api.post('/classrooms/', params)
     return response.data as ClassroomInfo
   },
 
   /** 获取课堂信息 */
   async getClassroom(classroomId: string): Promise<ClassroomInfo> {
-    const response = await api.get(`/classroom/${classroomId}`)
+    const response = await api.get(`/classrooms/${classroomId}`)
     return response.data as ClassroomInfo
   },
 
   /** 加入课堂 */
   async joinClassroom(classroomId: string): Promise<ClassroomInfo> {
-    const response = await api.post(`/classroom/${classroomId}/join`)
+    const response = await api.post(`/classrooms/${classroomId}/join`)
     return response.data as ClassroomInfo
   },
 
   /** 离开课堂 */
   async leaveClassroom(classroomId: string): Promise<void> {
-    await api.post(`/classroom/${classroomId}/leave`)
+    await api.post(`/classrooms/${classroomId}/leave`)
   },
 
   /** 举手 */
   async raiseHand(classroomId: string): Promise<void> {
-    await api.post(`/classroom/${classroomId}/raise-hand`)
+    await api.post(`/classrooms/${classroomId}/raise-hand`)
   },
 
   /** 创建投票 */
   async createPoll(classroomId: string, params: CreatePollParams): Promise<PollItem> {
-    const response = await api.post(`/classroom/${classroomId}/polls`, params)
+    const response = await api.post(`/classrooms/${classroomId}/poll`, params)
     return response.data as PollItem
   },
 
   /** 投票 */
   async votePoll(classroomId: string, pollId: string, params: PollVoteParams): Promise<void> {
-    await api.post(`/classroom/${classroomId}/polls/${pollId}/vote`, params)
+    await api.post(`/classrooms/${classroomId}/poll/${pollId}/vote`, params)
   },
 
   /** 获取投票结果 */
   async getPollResult(classroomId: string, pollId: string): Promise<PollResult> {
-    const response = await api.get(`/classroom/${classroomId}/polls/${pollId}/result`)
+    const response = await api.get(`/classrooms/${classroomId}/poll/${pollId}/result`)
     return response.data as PollResult
   },
 
   /** 结束课堂 */
   async endClassroom(classroomId: string): Promise<void> {
-    await api.post(`/classroom/${classroomId}/end`)
+    await api.post(`/classrooms/${classroomId}/end`)
   },
 
   /** 获取WebSocket连接URL */

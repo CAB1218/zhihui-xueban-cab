@@ -20,6 +20,13 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
+/** 底部导航项 */
+interface NavItem {
+  path: string
+  icon: string
+  label: string
+}
+
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
