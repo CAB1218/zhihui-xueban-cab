@@ -52,6 +52,17 @@ export const sceneRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        // ========== 课程梳理（任务1：理解学科-学习内容与要求梳理） ==========
+        path: 'curriculum',
+        name: 'SceneCurriculum',
+        component: () => import('@/views/curriculum/CurriculumOutlineView.vue'),
+        meta: {
+          title: '课程梳理',
+          requiresAuth: true,
+          allowedRoles: ['student', 'teacher', 'admin'],
+        },
+      },
+      {
         // ========== AI 智能体中心入口 ==========
         path: 'agent',
         name: 'AgentCenter',

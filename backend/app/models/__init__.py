@@ -26,3 +26,4 @@ from app.models.teacher_method import TeacherMethod, ClassroomRecord  # noqa: F4
 from app.models.usage import LLMUsageLog, TenantQuota  # noqa: F401
 from app.models.export import AgentExport  # noqa: F401
 from app.models.evaluation import StudentEvaluation  # noqa: F401
+from app.models.curriculum import CurriculumOutline  # noqa: F401

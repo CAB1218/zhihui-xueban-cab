@@ -1,0 +1,265 @@
+{
+  "course": "初中数学 七年级上册（人教版）",
+  "subject": "math",
+  "subject_name": "数学",
+  "grade_level": "七年级（初一上学期）",
+  "scope": "依据《义务教育数学课程标准（2022年版）》第四学段（7~9年级）数与代数、图形与几何两大主题，覆盖人教版七年级上册全部章节（有理数、有理数的运算、代数式、整式的加减、一元一次方程、几何图形初步），不含下册内容。",
+  "units": [
+    {
+      "name": "有理数",
+      "description": "数的扩充：从自然数、分数扩展到有理数，建立数轴、相反数、绝对值等核心概念，是整个初中学段运算体系的起点。",
+      "textbook_ref": "人教版七上 第一章",
+      "contents": [
+        {
+          "topic": "正数与负数",
+          "description": "用正负数表示具有相反意义的量",
+          "requirement": "了解负数产生的实际背景，能用正负数表示相反意义的量",
+          "requirement_level": "了解",
+          "cognitive_level": "understand",
+          "suggested_hours": 1
+        },
+        {
+          "topic": "数轴",
+          "description": "用数轴上的点表示有理数，实现数与形的第一次结合",
+          "requirement": "能画数轴，能用数轴上的点表示有理数，体会数形结合思想",
+          "requirement_level": "理解",
+          "cognitive_level": "understand",
+          "suggested_hours": 1
+        },
+        {
+          "topic": "相反数与绝对值",
+          "description": "相反数的代数与几何意义；绝对值的定义与几何意义",
+          "requirement": "掌握求有理数的相反数与绝对值的方法，能利用绝对值比较两个负数的大小",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 2
+        },
+        {
+          "topic": "有理数的大小比较",
+          "description": "借助数轴比较有理数大小",
+          "requirement": "能比较两个有理数的大小",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 1
+        }
+      ]
+    },
+    {
+      "name": "有理数的运算",
+      "description": "有理数加、减、乘、除、乘方五种运算及其混合运算，是后续所有代数运算的基础。",
+      "textbook_ref": "人教版七上 第二章",
+      "contents": [
+        {
+          "topic": "有理数的加法与减法",
+          "description": "加法法则与运算律；减法转化为加法",
+          "requirement": "掌握有理数加法法则与运算律，能熟练进行加减混合运算；经历探索运算律的过程",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 4
+        },
+        {
+          "topic": "有理数的乘法与除法",
+          "description": "乘法法则、运算律；倒数；除法转化为乘法",
+          "requirement": "掌握有理数乘法法则与运算律，理解倒数的意义，能进行乘除混合运算",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 3
+        },
+        {
+          "topic": "有理数的乘方",
+          "description": "乘方意义、幂的符号规律、科学记数法、近似数",
+          "requirement": "理解乘方的意义，掌握科学记数法表示较大的数，能按要求取近似数",
+          "requirement_level": "理解",
+          "cognitive_level": "understand",
+          "suggested_hours": 2
+        },
+        {
+          "topic": "有理数混合运算",
+          "description": "五种运算的混合运算与运算顺序",
+          "requirement": "能按运算顺序正确进行有理数混合运算，合理运用运算律简化运算",
+          "requirement_level": "运用",
+          "cognitive_level": "apply",
+          "suggested_hours": 3
+        }
+      ]
+    },
+    {
+      "name": "代数式与整式的加减",
+      "description": "用字母表示数进入代数世界：代数式的意义、整式概念、合并同类项与去括号法则。",
+      "textbook_ref": "人教版七上 第三章、第四章",
+      "contents": [
+        {
+          "topic": "用字母表示数与代数式",
+          "description": "字母表示数的意义，列代数式表示数量关系",
+          "requirement": "能用代数式表示简单数量关系，解释代数式的实际意义",
+          "requirement_level": "理解",
+          "cognitive_level": "understand",
+          "suggested_hours": 2
+        },
+        {
+          "topic": "整式（单项式、多项式）",
+          "description": "单项式的系数与次数，多项式的项与次数",
+          "requirement": "理解单项式、多项式、整式的概念",
+          "requirement_level": "理解",
+          "cognitive_level": "understand",
+          "suggested_hours": 1
+        },
+        {
+          "topic": "合并同类项与去括号",
+          "description": "同类项判定与合并法则；去括号法则（符号变化）",
+          "requirement": "掌握合并同类项与去括号的法则，能熟练进行整式加减运算",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 3
+        }
+      ]
+    },
+    {
+      "name": "一元一次方程",
+      "description": "方程思想的首次系统学习：从实际问题中建立方程模型并求解，是本册的核心应用内容。",
+      "textbook_ref": "人教版七上 第五章",
+      "contents": [
+        {
+          "topic": "方程与方程的解",
+          "description": "方程、方程的解、解方程的概念",
+          "requirement": "了解方程及方程的解的意义，能检验一个数是否为方程的解",
+          "requirement_level": "了解",
+          "cognitive_level": "understand",
+          "suggested_hours": 1
+        },
+        {
+          "topic": "等式的性质与解一元一次方程",
+          "description": "等式性质；移项、去分母等解方程一般步骤",
+          "requirement": "掌握等式的性质，能根据等式性质解一元一次方程（含分母方程）",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 4
+        },
+        {
+          "topic": "实际问题与一元一次方程",
+          "description": "配套、工程、销售、行程等常见应用题型",
+          "requirement": "能根据实际问题中的数量关系列出一元一次方程并求解，体会方程模型思想",
+          "requirement_level": "运用",
+          "cognitive_level": "analyze",
+          "suggested_hours": 5
+        }
+      ]
+    },
+    {
+      "name": "几何图形初步",
+      "description": "从实物抽象出几何图形，认识立体图形与平面图形，学习直线、射线、线段与角，是初中几何的入门。",
+      "textbook_ref": "人教版七上 第六章",
+      "contents": [
+        {
+          "topic": "几何图形与立体图形展开图",
+          "description": "立体图形与平面图形的区分与转化",
+          "requirement": "能从实物中抽象出几何图形，认识立体图形与平面图形的联系，能画出简单展开图",
+          "requirement_level": "经历",
+          "cognitive_level": "understand",
+          "suggested_hours": 2
+        },
+        {
+          "topic": "直线、射线、线段",
+          "description": "两点确定一条直线；线段的和差与中点",
+          "requirement": "掌握直线的性质（两点确定一条直线），能比较线段长短、计算线段的和差与中点",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 2
+        },
+        {
+          "topic": "角及其度量",
+          "description": "角的表示、度分秒换算、角的和差、角平分线",
+          "requirement": "理解角的有关概念，能进行度分秒的换算，掌握角的和差计算与角平分线",
+          "requirement_level": "理解",
+          "cognitive_level": "apply",
+          "suggested_hours": 3
+        },
+        {
+          "topic": "余角与补角",
+          "description": "互余、互补的概念与性质",
+          "requirement": "掌握余角和补角的性质，并能用于简单推理",
+          "requirement_level": "掌握",
+          "cognitive_level": "analyze",
+          "suggested_hours": 1
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from_topic": "有理数",
+      "to_topic": "有理数的运算",
+      "link_type": "prerequisite",
+      "description": "必须先理解数轴、相反数、绝对值，才能理解运算中的符号法则；绝对值直接参与加法法则的表述。"
+    },
+    {
+      "from_topic": "有理数的运算",
+      "to_topic": "整式的加减",
+      "link_type": "prerequisite",
+      "description": "合并同类项的本质是系数（有理数）的加减运算；去括号法则由乘法分配律推广而来。"
+    },
+    {
+      "from_topic": "用字母表示数与代数式",
+      "to_topic": "整式的加减",
+      "link_type": "prerequisite",
+      "description": "先会用字母表示数，才有对代数式（整式）进行加减运算的对象。"
+    },
+    {
+      "from_topic": "整式的加减",
+      "to_topic": "一元一次方程",
+      "link_type": "prerequisite",
+      "description": "解方程的移项、去括号、合并同类项步骤全部依赖整式加减的技能。"
+    },
+    {
+      "from_topic": "有理数的运算",
+      "to_topic": "一元一次方程",
+      "link_type": "prerequisite",
+      "description": "解方程过程中的系数计算与检验都需要有理数混合运算的熟练度。"
+    },
+    {
+      "from_topic": "一元一次方程",
+      "to_topic": "几何图形初步",
+      "link_type": "related",
+      "description": "线段与角的计算题常需列方程求解，两个单元在期末综合题中经常结合。"
+    },
+    {
+      "from_topic": "数轴",
+      "to_topic": "几何图形初步",
+      "link_type": "related",
+      "description": "数轴是数形结合的第一课，为学习直线、线段的几何直观提供经验。"
+    },
+    {
+      "from_topic": "实际问题与一元一次方程",
+      "to_topic": "有理数混合运算",
+      "link_type": "cross_subject",
+      "description": "销售、行程等应用题同时涉及百分数（小学数学）与有理数运算的跨学段迁移。"
+    }
+  ],
+  "sources": [
+    {
+      "title": "义务教育数学课程标准（2022年版）",
+      "publisher": "中华人民共和国教育部",
+      "url": "http://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html",
+      "source_type": "curriculum_standard",
+      "usage": "第四学段「数与代数」「图形与几何」主题的内容要求与学业要求，作为全部 requirement 表述的依据"
+    },
+    {
+      "title": "人教版义务教育教科书 数学 七年级上册",
+      "publisher": "人民教育出版社",
+      "url": "https://www.pep.com.cn",
+      "source_type": "textbook",
+      "usage": "确定章节顺序（有理数→运算→代数式→整式→方程→几何初步）与各单元教材出处"
+    },
+    {
+      "title": "义务教育教科书教师教学用书 数学七年级上册",
+      "publisher": "人民教育出版社",
+      "url": "https://www.pep.com.cn",
+      "source_type": "textbook",
+      "usage": "参考各章建议课时数与教学重难点定位"
+    }
+  ],
+  "generated_at": "2026-11-09T12:30:00+00:00",
+  "model": "builtin-sample",
+  "used_web_search": false,
+  "is_sample": true
+}
