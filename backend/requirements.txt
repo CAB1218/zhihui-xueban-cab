@@ -22,6 +22,8 @@ langchain-community==0.2.0
 openai==1.30.0
 httpx==0.27.0
 celery[redis]==5.4.0
+# kombu 5.6+ 要求 redis-py >= 6.1，与上面固定的 redis==5.0.4 冲突（worker 会 VersionMismatch 重启循环）
+kombu==5.4.0
 opentelemetry-api==1.25.0
 opentelemetry-sdk==1.25.0
 opentelemetry-instrumentation-fastapi==0.46b0

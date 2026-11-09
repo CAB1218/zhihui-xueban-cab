@@ -152,6 +152,7 @@ docker compose exec backend python scripts/seed_notes_resources.py  # 笔记与�
 | `docker exec ... scripts/seed_data.py` 报文件不存在 | `.dockerignore` 曾排除 `scripts/` | 已改为打进镜像 |
 | 前端页面空白 / 404 | nginx 挂载 `frontend/dist`，仓库里没有构建产物 | 先执行上面第 2 步 |
 | 知识图谱节点写入报 `Property values can only be of primitive types` | Neo4j 5 不允许 map 作为属性值 | `create_node` 已自动把 dict/list 序列化为 JSON 字符串 |
+| celery-worker 反复重启，报 `Redis transport requires redis-py versions 6.1.0 or later` | kombu 5.6+ 与固定的 redis==5.0.4 不兼容 | requirements 已锁定 `kombu==5.4.0` |
 
 
 **停止 / 重启**：
