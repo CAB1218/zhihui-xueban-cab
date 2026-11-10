@@ -99,6 +99,7 @@ const currentSceneType = computed(() => {
 
 /** 功能菜单列表 */
 const featureMenus = computed(() => [
+  { index: `/scene/${currentSceneType.value}/classroom`, icon: 'School', title: '课堂互动' },
   { index: `/scene/${currentSceneType.value}/curriculum`, icon: 'Reading', title: '课程梳理' },
   { index: `/scene/${currentSceneType.value}/graphs`, icon: 'Connection', title: '知识图谱' },
   { index: `/scene/${currentSceneType.value}/notes`, icon: 'EditPen', title: '智能笔记' },

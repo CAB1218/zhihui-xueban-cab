@@ -161,7 +161,7 @@ export const useClassroomStore = defineStore('classroom', () => {
     if (!currentClassroom.value) return
 
     try {
-      await classroomApi.votePoll(currentClassroom.value.id, pollId, { option_index: optionIndex })
+      await classroomApi.votePoll(currentClassroom.value.id as string, pollId, { selected_options: [optionIndex] })
       ElMessage.success('投票成功')
       // 获取最新结果
       await fetchPollResult(pollId)

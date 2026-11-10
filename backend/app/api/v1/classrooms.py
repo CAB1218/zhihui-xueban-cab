@@ -13,6 +13,7 @@ from app.schemas.classroom import (
     ClassroomCreate,
     ClassroomResponse,
     DanmakuMessage,
+    JoinByCodeRequest,
     JoinClassroomRequest,
     PollCreate,
     PollResult,
@@ -48,6 +49,37 @@ async def create_classroom(
     return APIResponse(code=0, data=result, message="success")
 
 
+@router.get("/", summary="我的课堂列表")
+async def list_my_classrooms(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> APIResponse:
+    """教师返回自己创建的课堂，学生返回已加入的课堂"""
+    service = ClassroomService(db)
+    items = await service.list_classrooms(
+        tenant_id=current_user.tenant_id or 0,
+        user_id=current_user.id,
+        role=current_user.role,
+    )
+    return APIResponse(code=0, data=items, message="success")
+
+
+@router.post("/join-by-code", summary="通过加入码加入课堂")
+async def join_by_code(
+    join_data: JoinByCodeRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> APIResponse:
+    """学生输入 6 位加入码进入课堂"""
+    service = ClassroomService(db)
+    classroom = await service.join_by_code(
+        access_code=join_data.access_code,
+        tenant_id=current_user.tenant_id or 0,
+        user_id=current_user.id,
+    )
+    return APIResponse(code=0, data=classroom, message="success")
+
+
 @router.get("/{classroom_id}", summary="获取课堂详情")
 async def get_classroom(
     classroom_id: int,
@@ -65,22 +97,48 @@ async def get_classroom(
     return APIResponse(code=0, data=result, message="success")
 
 
+@router.get("/{classroom_id}/participants", summary="课堂参与者列表")
+async def list_participants(
+    classroom_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> APIResponse:
+    """获取课堂参与者（含举手状态）"""
+    service = ClassroomService(db)
+    items = await service.list_participants(classroom_id)
+    return APIResponse(code=0, data=items, message="success")
+
+
+@router.get("/{classroom_id}/polls", summary="课堂投票列表")
+async def list_polls(
+    classroom_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> APIResponse:
+    """获取课堂全部投票及票数"""
+    service = ClassroomService(db)
+    items = await service.list_polls(classroom_id)
+    return APIResponse(code=0, data=items, message="success")
+
+
 @router.post("/{classroom_id}/join", summary="加入课堂")
 async def join_classroom(
     classroom_id: int,
-    join_data: JoinClassroomRequest,
+    join_data: Optional[JoinClassroomRequest] = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> APIResponse:
     """学生加入课堂"""
     service = ClassroomService(db)
-    result = await service.join_classroom(
+    await service.join_classroom(
         classroom_id=classroom_id,
         tenant_id=current_user.tenant_id or 0,
         user_id=current_user.id,
-        access_code=join_data.access_code,
+        access_code=join_data.access_code if join_data else None,
     )
-    return APIResponse(code=0, data=result, message="success")
+    # 返回完整的课堂信息（前端需要 id/status 才能继续举手、投票）
+    classroom = await service.get_classroom(classroom_id, current_user.tenant_id or 0)
+    return APIResponse(code=0, data=classroom, message="success")
 
 
 @router.post("/{classroom_id}/leave", summary="离开课堂")

@@ -33,9 +33,20 @@ export const sceneRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'classroom/:courseId',
+        // ========== 课堂互动（大厅 + 房间）==========
+        path: 'classroom',
         name: 'SceneClassroom',
-        component: () => import('@/views/scene/DashboardView.vue'),
+        component: () => import('@/views/scene/classroom/ClassroomRoomView.vue'),
+        meta: {
+          title: '课堂互动',
+          requiresAuth: true,
+          allowedRoles: ['student', 'teacher', 'admin'],
+        },
+      },
+      {
+        path: 'classroom/:classroomId',
+        name: 'SceneClassroomRoom',
+        component: () => import('@/views/scene/classroom/ClassroomRoomView.vue'),
         meta: {
           title: '课堂互动',
           requiresAuth: true,

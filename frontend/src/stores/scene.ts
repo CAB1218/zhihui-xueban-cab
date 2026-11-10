@@ -28,7 +28,7 @@ export const useSceneStore = defineStore('scene', () => {
 
   /** 当前场景主题色 */
   const primaryColor = computed<string>(() => {
-    return currentSceneConfig.value?.primaryColor ?? '#1976D2'
+    return currentSceneConfig.value?.primary_color ?? '#1976D2'
   })
 
   /** 当前场景名称 */
@@ -43,17 +43,17 @@ export const useSceneStore = defineStore('scene', () => {
 
   /** 当前场景功能开关 */
   const featureFlags = computed<Record<string, boolean>>(() => {
-    return currentSceneConfig.value?.featureFlags ?? {}
+    return currentSceneConfig.value?.feature_flags ?? {}
   })
 
   /** 当前场景组件列表 */
   const widgets = computed<string[]>(() => {
-    return currentSceneConfig.value?.defaultWidgets ?? []
+    return currentSceneConfig.value?.default_widgets ?? []
   })
 
   /** 当前场景布局配置 */
   const layoutConfig = computed<Record<string, unknown>>(() => {
-    return currentSceneConfig.value?.layoutConfig ?? {}
+    return currentSceneConfig.value?.layout_config ?? {}
   })
 
   // ============ Actions ============
@@ -137,7 +137,8 @@ export const useSceneStore = defineStore('scene', () => {
     try {
       const config = await sceneApi.getCurrentScene()
       currentSceneConfig.value = config
-      applySceneTheme(config.primaryColor)
+      currentSceneType.value = (config.scene_type as SceneType) || currentSceneType.value
+      applySceneTheme(config.primary_color)
     } catch (error) {
       console.error('获取场景配置失败:', error)
     }

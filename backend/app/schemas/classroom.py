@@ -57,6 +57,12 @@ class JoinClassroomRequest(BaseModel):
     access_code: Optional[str] = Field(None, description="加入码（如需要）")
 
 
+class JoinByCodeRequest(BaseModel):
+    """通过加入码加入课堂"""
+
+    access_code: str = Field(..., min_length=4, max_length=12, description="课堂加入码")
+
+
 class PollCreate(BaseModel):
     """发起投票请求"""
 

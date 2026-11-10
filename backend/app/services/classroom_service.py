@@ -59,13 +59,25 @@ class ClassroomService:
             teacher_id=teacher_id,
             title=title,
             description=description,
-            status="scheduled",
+            status="active",
             access_code=access_code,
             max_participants=max_participants,
-            participant_count=0,
+            participant_count=1,
+            started_at=datetime.utcnow(),
             settings=json.dumps(settings or {}, ensure_ascii=False),
         )
         self.db.add(classroom)
+        await self.db.flush()
+
+        # 创建者（教师）自动加入课堂，否则举手/投票等操作会报「未在该课堂中」
+        self.db.add(
+            ClassroomParticipant(
+                classroom_id=classroom.id,
+                user_id=teacher_id,
+                role="teacher",
+                hand_raised=False,
+            )
+        )
         await self.db.flush()
 
         return self._classroom_to_dict(classroom)
@@ -73,7 +85,7 @@ class ClassroomService:
     async def get_classroom(
         self,
         classroom_id: int,
-        tenant_id: int,
+        tenant_id: Optional[int] = None,
     ) -> Optional[Dict[str, Any]]:
         """
         获取课堂详情
@@ -85,12 +97,11 @@ class ClassroomService:
         Returns:
             课堂信息
         """
-        stmt = select(Classroom).where(
-            and_(
-                Classroom.id == classroom_id,
-                Classroom.tenant_id == tenant_id,
-            )
-        )
+        conditions = [Classroom.id == classroom_id]
+        # 自助注册的用户 tenant_id 可能为空，此时不做租户隔离（开发/演示环境）
+        if tenant_id:
+            conditions.append(Classroom.tenant_id == tenant_id)
+        stmt = select(Classroom).where(and_(*conditions))
         result = await self.db.execute(stmt)
         classroom = result.scalars().first()
 
@@ -102,7 +113,7 @@ class ClassroomService:
     async def join_classroom(
         self,
         classroom_id: int,
-        tenant_id: int,
+        tenant_id: Optional[int],
         user_id: int,
         access_code: Optional[str] = None,
     ) -> Dict[str, Any]:
@@ -118,12 +129,10 @@ class ClassroomService:
         Returns:
             加入结果
         """
-        stmt = select(Classroom).where(
-            and_(
-                Classroom.id == classroom_id,
-                Classroom.tenant_id == tenant_id,
-            )
-        )
+        conditions = [Classroom.id == classroom_id]
+        if tenant_id:
+            conditions.append(Classroom.tenant_id == tenant_id)
+        stmt = select(Classroom).where(and_(*conditions))
         result = await self.db.execute(stmt)
         classroom = result.scalars().first()
 
@@ -285,6 +294,8 @@ class ClassroomService:
             "poll_type": poll_type,
             "is_anonymous": is_anonymous,
             "status": "active",
+            "is_active": True,
+            "total_votes": 0,
             "created_at": poll.created_at.isoformat() if poll.created_at else None,
         }
 
@@ -395,6 +406,136 @@ class ClassroomService:
             "created_at": poll.created_at.isoformat() if poll.created_at else None,
             "closed_at": poll.closed_at.isoformat() if poll.closed_at else None,
         }
+
+    async def list_classrooms(
+        self,
+        tenant_id: int,
+        user_id: int,
+        role: str,
+        limit: int = 30,
+    ) -> List[Dict[str, Any]]:
+        """
+        获取「我的课堂」列表
+
+        教师返回自己创建的课堂，学生返回已加入的课堂，管理员返回租户内全部课堂。
+        """
+        if role in ("admin", "super_admin"):
+            stmt = select(Classroom).where(Classroom.tenant_id == tenant_id)
+        elif role == "teacher":
+            stmt = select(Classroom).where(
+                and_(Classroom.tenant_id == tenant_id, Classroom.teacher_id == user_id)
+            )
+        else:
+            stmt = (
+                select(Classroom)
+                .join(ClassroomParticipant, ClassroomParticipant.classroom_id == Classroom.id)
+                .where(
+                    and_(
+                        ClassroomParticipant.user_id == user_id,
+                        ClassroomParticipant.left_at.is_(None),
+                    )
+                )
+            )
+
+        stmt = stmt.order_by(desc(Classroom.id)).limit(limit)
+        result = await self.db.execute(stmt)
+        return [self._classroom_to_dict(item) for item in result.scalars().all()]
+
+    async def list_participants(self, classroom_id: int) -> List[Dict[str, Any]]:
+        """获取课堂参与者列表（不含已离开）"""
+        from app.models.user import User
+
+        stmt = (
+            select(ClassroomParticipant, User)
+            .join(User, User.id == ClassroomParticipant.user_id)
+            .where(
+                and_(
+                    ClassroomParticipant.classroom_id == classroom_id,
+                    ClassroomParticipant.left_at.is_(None),
+                )
+            )
+            .order_by(ClassroomParticipant.role.desc(), ClassroomParticipant.id.asc())
+        )
+        result = await self.db.execute(stmt)
+
+        participants: List[Dict[str, Any]] = []
+        for participant, user in result.all():
+            participants.append(
+                {
+                    "user_id": participant.user_id,
+                    "name": user.nickname or user.email,
+                    "avatar_url": user.avatar_url,
+                    "role": participant.role,
+                    "hand_raised": bool(participant.hand_raised),
+                    "is_online": True,
+                    "joined_at": participant.joined_at.isoformat() if participant.joined_at else None,
+                }
+            )
+        return participants
+
+    async def list_polls(self, classroom_id: int) -> List[Dict[str, Any]]:
+        """获取课堂投票列表（含票数）"""
+        stmt = (
+            select(ClassroomPoll)
+            .where(ClassroomPoll.classroom_id == classroom_id)
+            .order_by(desc(ClassroomPoll.id))
+        )
+        result = await self.db.execute(stmt)
+        polls = result.scalars().all()
+
+        counts: Dict[int, int] = {}
+        if polls:
+            count_stmt = (
+                select(ClassroomPollVote.poll_id, func.count(ClassroomPollVote.id))
+                .where(ClassroomPollVote.poll_id.in_([p.id for p in polls]))
+                .group_by(ClassroomPollVote.poll_id)
+            )
+            count_result = await self.db.execute(count_stmt)
+            counts = {row[0]: row[1] for row in count_result.all()}
+
+        items: List[Dict[str, Any]] = []
+        for poll in polls:
+            try:
+                options = json.loads(poll.options) if isinstance(poll.options, str) else poll.options
+            except (json.JSONDecodeError, TypeError):
+                options = []
+            items.append(
+                {
+                    "id": poll.id,
+                    "classroom_id": poll.classroom_id,
+                    "question": poll.question,
+                    "options": options,
+                    "poll_type": poll.poll_type,
+                    "is_anonymous": bool(poll.is_anonymous),
+                    "status": poll.status,
+                    "is_active": poll.status == "active",
+                    "total_votes": counts.get(poll.id, 0),
+                    "created_at": poll.created_at.isoformat() if poll.created_at else None,
+                }
+            )
+        return items
+
+    async def join_by_code(
+        self,
+        access_code: str,
+        tenant_id: int,
+        user_id: int,
+    ) -> Dict[str, Any]:
+        """通过加入码加入课堂"""
+        stmt = select(Classroom).where(Classroom.access_code == access_code)
+        result = await self.db.execute(stmt)
+        classroom = result.scalars().first()
+
+        if not classroom:
+            raise NotFoundException(message="加入码无效")
+
+        await self.join_classroom(
+            classroom_id=classroom.id,
+            tenant_id=tenant_id,
+            user_id=user_id,
+            access_code=access_code,
+        )
+        return self._classroom_to_dict(classroom)
 
     async def end_classroom(
         self,
