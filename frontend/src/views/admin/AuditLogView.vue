@@ -140,7 +140,7 @@ const mockLogs: AuditLogEntry[] = [
 async function loadData(): Promise<void> {
   loading.value = true
   try {
-    const response = await api.get('/admin/audit-logs', {
+    const response = await api.get('/governance/audit-logs', {
       params: {
         page: currentPage.value,
         page_size: pageSize.value,

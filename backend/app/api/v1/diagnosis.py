@@ -37,6 +37,23 @@ async def start_diagnosis(
     return APIResponse(code=0, data=result, message="success")
 
 
+# 注意：静态路径必须定义在 /{diagnosis_id} 之前，否则 "history" 会被当作路径参数解析
+@router.get("/history", summary="诊断历史")
+async def diagnosis_history(
+    limit: int = Query(20, ge=1, le=100, description="返回数量"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> APIResponse:
+    """获取历史诊断记录"""
+    service = DiagnosisService(db)
+    result = await service.get_history(
+        tenant_id=current_user.tenant_id or 0,
+        user_id=current_user.id,
+        limit=limit,
+    )
+    return APIResponse(code=0, data=result, message="success")
+
+
 @router.post("/{diagnosis_id}/submit", summary="提交答案")
 async def submit_answers(
     diagnosis_id: int,
@@ -115,21 +132,5 @@ async def generate_review_cards(
         diagnosis_id=diagnosis_id,
         tenant_id=current_user.tenant_id or 0,
         user_id=current_user.id,
-    )
-    return APIResponse(code=0, data=result, message="success")
-
-
-@router.get("/history", summary="诊断历史")
-async def diagnosis_history(
-    limit: int = Query(20, ge=1, le=100, description="返回数量"),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> APIResponse:
-    """获取历史诊断记录"""
-    service = DiagnosisService(db)
-    result = await service.get_history(
-        tenant_id=current_user.tenant_id or 0,
-        user_id=current_user.id,
-        limit=limit,
     )
     return APIResponse(code=0, data=result, message="success")

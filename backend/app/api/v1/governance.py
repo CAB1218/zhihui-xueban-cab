@@ -122,3 +122,14 @@ async def get_data_retention_policy(
         tenant_id=current_user.tenant_id or 0,
     )
     return APIResponse(code=0, data=result, message="success")
+
+
+@router.post("/scan", summary="敏感数据扫描")
+async def scan_sensitive_data(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> APIResponse:
+    """扫描库表结构，输出敏感字段暴露面（只读，不采样真实数据行）"""
+    service = GovernanceService(db)
+    result = await service.scan_sensitive_fields(tenant_id=current_user.tenant_id or 0)
+    return APIResponse(code=0, data=result, message="success")

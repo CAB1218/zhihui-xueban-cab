@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.data_classification import (
     CLASSIFICATION_LABELS,
+    SENSITIVE_DATA_RULES,
     DataClassification,
     classify_field,
     classify_resource,
@@ -24,6 +25,14 @@ from app.models.user import User
 from app.schemas.common import PaginatedResponse, PaginationParams
 
 logger = logging.getLogger(__name__)
+
+# 字段名规则会误判的「同名字段不同语义」白名单：(表名, 列名) → 真实语义
+# 例：courses.grade / users.grade 存的是「年级/学段」，不是「成绩」
+_FIELD_SEMANTIC_OVERRIDES: Dict[tuple, str] = {
+    ("courses", "grade"): "年级/学段",
+    ("users", "grade"): "年级/学段",
+    ("curriculum_outlines", "grade"): "年级/学段",
+}
 
 
 class GovernanceService:
@@ -353,6 +362,129 @@ class GovernanceService:
             ],
             "last_reviewed": datetime.utcnow().isoformat(),
         }
+
+    async def scan_sensitive_fields(self, tenant_id: int) -> Dict[str, Any]:
+        """扫描库表结构，识别敏感字段暴露面（只读，不采样真实数据）
+
+        判定依据：``app.core.data_classification.SENSITIVE_DATA_RULES`` 中的字段名规则，
+        结合 PostgreSQL 系统目录得到表名、列名、估算行数与是否加密类型。
+        """
+        import re
+
+        from sqlalchemy import text
+
+        rows = (
+            await self.db.execute(
+                text(
+                    """
+                    SELECT c.table_name,
+                           c.column_name,
+                           c.data_type,
+                           GREATEST(COALESCE(pg_class.reltuples, 0), 0)::bigint AS approx_rows
+                      FROM information_schema.columns c
+                      JOIN pg_class ON pg_class.relname = c.table_name
+                      JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+                     WHERE c.table_schema = 'public'
+                       AND pg_namespace.nspname = 'public'
+                       AND pg_class.relkind = 'r'
+                     ORDER BY c.table_name, c.column_name
+                    """
+                )
+            )
+        ).mappings().all()
+
+        # 字段名 → 规则
+        field_rules: Dict[str, Dict[str, Any]] = {}
+        for rule in SENSITIVE_DATA_RULES:
+            for fname in rule["field_names"]:
+                field_rules[fname.lower()] = rule
+
+        findings: List[Dict[str, Any]] = []
+        scanned_tables: set = set()
+        for r in rows:
+            table, column = r["table_name"], r["column_name"]
+            scanned_tables.add(table)
+            rule = field_rules.get(column.lower())
+            if rule is None:
+                continue
+
+            row_count = int(r["approx_rows"])
+            if row_count <= 0:
+                # 新表 reltuples 为 0/-1，改为精确计数（只对命中的少量表执行）
+                row_count = await self._exact_row_count(table)
+
+            # 语义消歧：课程/用户表里的 grade 是「年级/学段」，不是「成绩」
+            ambiguous = (table, column.lower()) in _FIELD_SEMANTIC_OVERRIDES
+            cls = rule["classification"]
+            is_hashed = any(k in column.lower() for k in ("hash", "digest", "encrypted", "cipher"))
+            severity = {
+                DataClassification.CONFIDENTIAL: "high",
+                DataClassification.SENSITIVE: "high",
+                DataClassification.INTERNAL: "medium",
+                DataClassification.PUBLIC: "low",
+            }.get(cls, "medium")
+            if is_hashed:
+                severity = "low"
+            if ambiguous:
+                severity = "low"
+
+            if ambiguous:
+                desc = f"{table}.{column} 名为 grade，但实际语义为「年级/学段」，非成绩数据"
+                suggestion = "无需按成绩数据管控；如需展示请用年级枚举值"
+            elif is_hashed:
+                desc = f"{table}.{column} 命中「{rule['name']}」规则，已哈希/加密存储，风险可接受"
+                suggestion = "无需处理（已加密）"
+            else:
+                desc = f"{table}.{column} 命中「{rule['name']}」规则，建议确认是否已加密或脱敏"
+                suggestion = f"对 {column} 启用脱敏展示，并纳入「{rule['name']}」保留策略"
+
+            findings.append(
+                {
+                    "table_name": table,
+                    "field": column,
+                    "data_type": r["data_type"],
+                    "category": "年级/学段" if ambiguous else rule["name"],
+                    "classification": CLASSIFICATION_LABELS[cls],
+                    "severity": severity,
+                    "affected_rows": row_count,
+                    "encrypted": is_hashed,
+                    "description": desc,
+                    "suggestion": suggestion,
+                }
+            )
+
+        findings.sort(key=lambda x: ({"high": 0, "medium": 1, "low": 2}[x["severity"]], -x["affected_rows"]))
+        for idx, f in enumerate(findings, start=1):
+            f["id"] = idx
+            f["handled"] = f["encrypted"] or f["category"] == "年级/学段"
+
+        by_sev = {"high": 0, "medium": 0, "low": 0}
+        for f in findings:
+            by_sev[f["severity"]] += 1
+
+        return {
+            "tenant_id": tenant_id,
+            "scanned_tables": len(scanned_tables),
+            "scanned_columns": len(rows),
+            "total_findings": len(findings),
+            "severity_summary": by_sev,
+            "findings": findings,
+            "scanned_at": datetime.utcnow().isoformat(),
+        }
+
+    async def _exact_row_count(self, table: str) -> int:
+        """精确统计表行数（表名经白名单字符校验，避免注入）"""
+        import re
+
+        from sqlalchemy import text
+
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", table):
+            return 0
+        try:
+            result = await self.db.execute(text(f'SELECT count(*) FROM "{table}"'))
+            return int(result.scalar() or 0)
+        except Exception:  # noqa: BLE001 — 单表统计失败不影响整体扫描
+            return 0
 
     def _audit_to_dict(self, log: AuditLog) -> Dict[str, Any]:
         """将AuditLog模型转换为字典"""

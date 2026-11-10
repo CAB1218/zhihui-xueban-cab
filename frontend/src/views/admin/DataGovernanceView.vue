@@ -2,7 +2,7 @@
   <div class="data-governance">
     <div class="data-governance__header">
       <h2>数据治理</h2>
-      <el-button type="primary" @click="runScan">
+      <el-button type="primary" :loading="scanning" @click="runScan">
         <el-icon><Search /></el-icon> 扫描敏感数据
       </el-button>
     </div>
@@ -58,7 +58,13 @@
           <template #header>
             <div class="data-governance__card-header">
               <h3>敏感数据扫描结果</h3>
-              <span class="data-governance__scan-time">最近扫描：{{ lastScanTime }}</span>
+              <span class="data-governance__scan-time">
+                <template v-if="lastScanTime">最近扫描：{{ lastScanTime }}</template>
+                <template v-if="scanSummary.tables">
+                  　{{ scanSummary.tables }} 表 / {{ scanSummary.columns }} 字段 ｜
+                  高 {{ scanSummary.high }} · 中 {{ scanSummary.medium }} · 低 {{ scanSummary.low }}
+                </template>
+              </span>
             </div>
           </template>
           <div class="data-governance__scan-results">
@@ -150,17 +156,24 @@ interface ScanResult {
   description: string
   affected_rows: number
   handled: boolean
+  category?: string
+  classification?: string
+  suggestion?: string
 }
 
-const scanResults = ref<ScanResult[]>([
-  { id: 1, severity: 'high', table_name: 'user_profiles', field: 'id_card_number', description: '发现未加密存储的身份证号码字段', affected_rows: 2580, handled: false },
-  { id: 2, severity: 'high', table_name: 'ai_chat_logs', field: 'content', description: 'AI对话记录包含可能的个人信息泄露', affected_rows: 450, handled: false },
-  { id: 3, severity: 'medium', table_name: 'exam_results', field: 'score_detail', description: '成绩明细数据访问控制策略不完整', affected_rows: 3200, handled: false },
-  { id: 4, severity: 'low', table_name: 'user_preferences', field: 'settings', description: '用户偏好设置未设置数据保留期限', affected_rows: 890, handled: true },
-  { id: 5, severity: 'medium', table_name: 'notes', field: 'content', description: '笔记内容中检测到手机号模式', affected_rows: 67, handled: false },
-])
+const scanResults = ref<ScanResult[]>([])
 
-const lastScanTime = ref<string>('2025-01-15 08:30:00')
+const scanning = ref(false)
+
+const lastScanTime = ref<string>('')
+
+const scanSummary = ref<{ tables: number; columns: number; high: number; medium: number; low: number }>({
+  tables: 0,
+  columns: 0,
+  high: 0,
+  medium: 0,
+  low: 0,
+})
 
 // 合规详情
 const complianceItems = ref([
@@ -179,13 +192,34 @@ function getLevelType(level: string): string {
   return map[level] || ''
 }
 
-async function runScan(): Promise<void> {
-  ElMessage.info('开始扫描敏感数据...')
+async function runScan(silent = false): Promise<void> {
+  scanning.value = true
+  if (!silent) ElMessage.info('开始扫描敏感数据...')
   try {
-    await api.post('/admin/data-governance/scan')
-    ElMessage.success('扫描完成')
-  } catch {
-    ElMessage.warning('扫描请求已发送，结果稍后更新')
+    const res: any = await api.post('/governance/scan')
+    const data = res?.data ?? {}
+    scanResults.value = (data.findings ?? []) as ScanResult[]
+    scanSummary.value = {
+      tables: data.scanned_tables ?? 0,
+      columns: data.scanned_columns ?? 0,
+      high: data.severity_summary?.high ?? 0,
+      medium: data.severity_summary?.medium ?? 0,
+      low: data.severity_summary?.low ?? 0,
+    }
+    lastScanTime.value = data.scanned_at ? new Date(data.scanned_at).toLocaleString('zh-CN') : ''
+    if (scanResults.value.length) {
+      if (!silent) {
+        ElMessage.success(
+          `扫描完成：${scanSummary.value.tables} 张表 / ${scanSummary.value.columns} 个字段，发现 ${scanResults.value.length} 处敏感字段`,
+        )
+      }
+    } else if (!silent) {
+      ElMessage.success(`扫描完成：${scanSummary.value.tables} 张表，未发现敏感字段`)
+    }
+  } catch (e: any) {
+    ElMessage.error(e?.message || '扫描失败，请稍后重试')
+  } finally {
+    scanning.value = false
   }
 }
 
@@ -194,7 +228,8 @@ function handleResult(result: ScanResult): void {
 }
 
 onMounted(() => {
-  // 加载初始数据
+  // 进入页面自动做一次只读扫描，避免展示空表
+  runScan(true)
 })
 </script>
 
