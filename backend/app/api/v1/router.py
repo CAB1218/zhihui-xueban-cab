@@ -27,6 +27,7 @@ from app.api.v1.quota import router as quota_router
 from app.api.v1.export import router as export_router
 from app.api.v1.growth import router as growth_router
 from app.api.v1.curriculum import router as curriculum_router
+from app.api.v1.learning_analysis import router as learning_analysis_router
 
 # v1 总路由
 api_v1_router = APIRouter()
@@ -57,3 +58,4 @@ api_v1_router.include_router(quota_router, prefix="/admin/quotas", tags=["配额
 api_v1_router.include_router(export_router, prefix="/agents", tags=["对话导出"])
 api_v1_router.include_router(growth_router, prefix="/growth", tags=["成长档案"])
 api_v1_router.include_router(curriculum_router, prefix="/curriculum", tags=["课程梳理"])
+api_v1_router.include_router(learning_analysis_router, prefix="/learning-analysis", tags=["学情分析"])

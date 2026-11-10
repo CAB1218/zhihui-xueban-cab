@@ -3,7 +3,7 @@
     <el-card shadow="never" class="input-card">
       <template #header>
         <div class="card-header">
-          <span class="title">📚 课程梳理（任务1：理解学科 — 学习内容与要求梳理）</span>
+          <span class="title">📚 课程梳理（理解学科 — 学习内容与要求梳理）</span>
           <el-tag v-if="record?.outline?.is_sample" type="warning" size="small">离线梳理结果</el-tag>
         </div>
       </template>

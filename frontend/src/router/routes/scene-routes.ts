@@ -63,7 +63,18 @@ export const sceneRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        // ========== 课程梳理（任务1：理解学科-学习内容与要求梳理） ==========
+        // ========== 学情分析（数据质量检查 + 个体/群体摘要）==========
+        path: 'analysis',
+        name: 'SceneLearningAnalysis',
+        component: () => import('@/views/analysis/LearningAnalysisView.vue'),
+        meta: {
+          title: '学情分析',
+          requiresAuth: true,
+          allowedRoles: ['student', 'teacher', 'admin', 'super_admin'],
+        },
+      },
+      {
+        // ========== 课程梳理（理解学科-学习内容与要求梳理） ==========
         path: 'curriculum',
         name: 'SceneCurriculum',
         component: () => import('@/views/curriculum/CurriculumOutlineView.vue'),
