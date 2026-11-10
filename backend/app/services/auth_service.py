@@ -5,6 +5,7 @@ AI4Edu 认证 Service
 from datetime import datetime, timezone
 from typing import Optional, Tuple
 
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -17,6 +18,7 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
+from app.models.tenant import Tenant
 from app.models.user import User
 from app.schemas.auth import (
     LoginRequest,
@@ -105,8 +107,13 @@ class AuthService:
         if existing.scalars().first():
             raise ValidationException(message="该邮箱已注册")
 
+        # 归属租户：自注册用户默认加入默认租户（取 id 最小的租户），
+        # 否则 tenant_id 为空会让所有带租户外键的业务表（笔记/课堂/课程梳理…）插入失败
+        tenant_id = (await self.db.execute(select(func.min(Tenant.id)))).scalar()
+
         # 创建用户
         user = User(
+            tenant_id=tenant_id,
             email=request.email,
             password_hash=hash_password(request.password),
             nickname=request.nickname,

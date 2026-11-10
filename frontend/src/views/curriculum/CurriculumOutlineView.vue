@@ -4,18 +4,31 @@
       <template #header>
         <div class="card-header">
           <span class="title">📚 课程梳理（任务1：理解学科 — 学习内容与要求梳理）</span>
-          <el-tag v-if="record?.outline?.is_sample" type="warning" size="small">内置示例数据</el-tag>
+          <el-tag v-if="record?.outline?.is_sample" type="warning" size="small">离线梳理结果</el-tag>
         </div>
       </template>
 
       <el-form :model="form" label-width="90px" @submit.prevent="onGenerate">
         <el-form-item label="想学课程" required>
-          <el-input
-            v-model="form.course_query"
-            placeholder="例如：初中数学七年级上册 / 人教版高中数学必修一 / 数据结构(线性表)"
-            clearable
-            @keyup.enter="onGenerate"
-          />
+          <div class="course-input">
+            <el-input
+              v-model="form.course_query"
+              placeholder="例如：数据结构 / 初中数学七年级上册 / 高等数学（可先点下方示例快速填入）"
+              clearable
+              @keyup.enter="onGenerate"
+            />
+            <div class="quick-picks">
+              <span class="quick-label">快速示例：</span>
+              <el-tag
+                v-for="p in QUICK_PICKS"
+                :key="p.course"
+                size="small"
+                effect="plain"
+                class="quick-tag"
+                @click="fillQuick(p)"
+              >{{ p.label }}</el-tag>
+            </div>
+          </div>
         </el-form-item>
         <el-row :gutter="16">
           <el-col :span="8">
@@ -66,7 +79,7 @@
               <el-tag size="small" type="info">{{ outline.subject_name }}</el-tag>
               <el-tag v-if="outline.grade_level" size="small" type="info">{{ outline.grade_level }}</el-tag>
               <el-tag size="small" :type="outline.used_web_search ? 'success' : 'warning'">
-                {{ outline.used_web_search ? '已联网检索' : '未联网（依据模型知识）' }}
+                {{ outline.used_web_search ? '已联网检索' : (outline.is_sample ? '离线知识包' : '未联网（依据模型知识）') }}
               </el-tag>
               <el-dropdown>
                 <el-button type="primary" size="small">
@@ -84,9 +97,49 @@
           </div>
         </template>
 
+        <el-alert
+          v-if="outline.is_sample"
+          type="info"
+          show-icon
+          :closable="false"
+          class="sample-alert"
+          title="当前为离线梳理结果"
+          :description="`由「${outline.model || '内置知识包'}」生成，未调用大模型：内容框架、要求表述与材料出处均来自内置知识库，可在 backend/.env 配置 API Key 后获得更贴合你输入的梳理。`"
+        />
+
         <el-descriptions v-if="outline.scope" :column="1" border size="small" class="scope-desc">
           <el-descriptions-item label="梳理范围">{{ outline.scope }}</el-descriptions-item>
+          <el-descriptions-item v-if="outline.scope_included?.length" label="覆盖范围">
+            <el-tag v-for="(s, i) in outline.scope_included" :key="i" size="small" type="success" class="scope-tag">{{ s }}</el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item v-if="outline.scope_excluded?.length" label="不覆盖/仅了解">
+            <el-tag v-for="(s, i) in outline.scope_excluded" :key="i" size="small" type="info" class="scope-tag">{{ s }}</el-tag>
+          </el-descriptions-item>
         </el-descriptions>
+
+        <!-- 成果概览：一眼看清规模与完整性 -->
+        <div class="overview">
+          <div class="overview-item">
+            <span class="num">{{ outline.units.length }}</span>
+            <span class="label">单元</span>
+          </div>
+          <div class="overview-item">
+            <span class="num">{{ stats.contentCount }}</span>
+            <span class="label">学习内容</span>
+          </div>
+          <div class="overview-item">
+            <span class="num">{{ stats.hours }}</span>
+            <span class="label">建议课时</span>
+          </div>
+          <div class="overview-item">
+            <span class="num">{{ outline.connections.length }}</span>
+            <span class="label">必要联系</span>
+          </div>
+          <div class="overview-item">
+            <span class="num">{{ outline.sources.length }}</span>
+            <span class="label">材料出处</span>
+          </div>
+        </div>
 
         <!-- 学习内容与要求清单 -->
         <h3 class="section-title">一、学习内容与要求清单</h3>
@@ -174,7 +227,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import {
@@ -211,12 +264,41 @@ const form = ref({
   fallback_sample: false,
 })
 
+// 内置知识包覆盖的课程（无大模型 Key 时也能完整演示）
+const QUICK_PICKS = [
+  { label: '数据结构·二叉树', course: '数据结构', grade: '大二', hint: '二叉树' },
+  { label: '高等数学', course: '高等数学', grade: '大一', hint: '' },
+  { label: '线性代数', course: '线性代数', grade: '大二', hint: '' },
+  { label: '大学物理', course: '大学物理', grade: '大二', hint: '' },
+  { label: '初中数学七上', course: '初中数学七年级上册', grade: '七年级', hint: '' },
+  { label: '高中数学', course: '高中数学', grade: '高一', hint: '' },
+  { label: '高中物理', course: '高中物理', grade: '高一', hint: '' },
+  { label: '高中化学', course: '高中化学', grade: '高一', hint: '' },
+]
+
+function fillQuick(p: { course: string; grade: string; hint: string }) {
+  form.value.course_query = p.course
+  form.value.grade_level = p.grade
+  form.value.scope_hint = p.hint
+}
+
 const generating = ref(false)
 const errorMsg = ref('')
 const record = ref<CurriculumOutlineRecord | null>(null)
 const outline = ref<CurriculumOutlineData | null>(null)
 const expandedUnits = ref<number[]>([0])
 const history = ref<CurriculumOutlineRecord[]>([])
+
+// 成果概览统计
+const stats = computed(() => {
+  const units = outline.value?.units || []
+  const contentCount = units.reduce((sum, u) => sum + (u.contents?.length || 0), 0)
+  const hours = units.reduce(
+    (sum, u) => sum + (u.contents || []).reduce((s, c) => s + (c.suggested_hours || 0), 0),
+    0,
+  )
+  return { contentCount, hours: Math.round(hours) }
+})
 
 async function onGenerate() {
   if (!form.value.course_query.trim()) {
@@ -243,7 +325,11 @@ async function onGenerate() {
       errorMsg.value = res.error_message || '生成失败'
     }
   } catch (e: any) {
-    errorMsg.value = e?.message || '生成失败，请稍后重试'
+    // 优先使用后端返回的具体原因（AppException 的 message），而不是 axios 的英文提示
+    errorMsg.value =
+      e?.response?.data?.message ||
+      e?.message ||
+      '生成失败，请稍后重试'
   } finally {
     generating.value = false
     loadHistory()
@@ -308,6 +394,23 @@ onMounted(loadHistory)
 .card-header .title {
   font-weight: 600;
 }
+.course-input {
+  width: 100%;
+}
+.quick-picks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.quick-label {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+.quick-tag {
+  cursor: pointer;
+}
 .actions {
   display: flex;
   align-items: center;
@@ -340,6 +443,37 @@ onMounted(loadHistory)
 }
 .scope-desc {
   margin-bottom: 8px;
+}
+.sample-alert {
+  margin: 12px 0;
+}
+.scope-tag {
+  margin: 3px 6px 3px 0;
+}
+.overview {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0 4px;
+}
+.overview-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 6px;
+  border-radius: 8px;
+  background: var(--el-fill-color-lighter);
+}
+.overview-item .num {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--el-color-primary);
+  line-height: 1.2;
+}
+.overview-item .label {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
 }
 .source-list {
   padding-left: 20px;

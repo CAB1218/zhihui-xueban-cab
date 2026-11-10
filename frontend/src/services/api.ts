@@ -164,7 +164,11 @@ api.interceptors.response.use(
         }
         break
       case 500:
-        ElMessage.error('服务器内部错误')
+        // 后端 AppException 会带 message，优先展示，便于定位而不是只说「服务器内部错误」
+        ElMessage.error(data?.message || '服务器内部错误')
+        break
+      case 503:
+        ElMessage.error(data?.message || '服务暂时不可用，请稍后再试')
         break
       default:
         ElMessage.error(data.message || '请求失败')

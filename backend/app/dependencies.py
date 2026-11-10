@@ -68,6 +68,20 @@ async def get_current_user(
             detail="账号已禁用",
         )
 
+    # 兼容历史自注册用户：tenant_id 为空时自动归属默认租户。
+    # 否则各业务模块的 tenant_id=... or 0 会写入一个不存在的租户 id，
+    # 触发 tenant_id 外键约束失败（前端表现为 500 服务器内部错误）。
+    if user.tenant_id is None:
+        from sqlalchemy import func
+
+        from app.models.tenant import Tenant
+
+        default_tenant_id = (await db.execute(select(func.min(Tenant.id)))).scalar()
+        if default_tenant_id is not None:
+            user.tenant_id = default_tenant_id
+            await db.commit()
+            await db.refresh(user)
+
     # 将用户信息附加到请求状态（供中间件使用）
     request.state.user_id = user.id
     request.state.user_role = user.role

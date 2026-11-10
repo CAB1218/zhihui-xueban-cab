@@ -74,6 +74,8 @@ class CurriculumOutlineData(BaseModel):
     subject_name: str = Field("数学", description="学科中文名")
     grade_level: str = Field("", description="学段/年级")
     scope: str = Field("", description="梳理范围说明（清楚界定边界）")
+    scope_included: List[str] = Field(default_factory=list, description="本次梳理明确覆盖的范围（单元/章节/主题）")
+    scope_excluded: List[str] = Field(default_factory=list, description="本次梳理明确排除或仅作了解的内容，避免越界")
     units: List[Unit] = Field(default_factory=list)
     connections: List[KnowledgeLink] = Field(default_factory=list)
     sources: List[MaterialSource] = Field(default_factory=list)

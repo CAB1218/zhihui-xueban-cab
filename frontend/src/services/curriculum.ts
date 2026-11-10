@@ -44,6 +44,8 @@ export interface CurriculumOutlineData {
   subject_name: string
   grade_level: string
   scope: string
+  scope_included?: string[]
+  scope_excluded?: string[]
   units: OutlineUnit[]
   connections: KnowledgeLink[]
   sources: MaterialSource[]

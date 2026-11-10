@@ -30,6 +30,13 @@
         │ 结构化 JSON
         ▼
 ┌─────────────────────────────┐
+│ 离线知识包引擎（无 Key 兜底）   │  内置 14 个知识包，按课程/学段/范围匹配
+│ · 范围边界显式列出（含/不含）   │  产出结构与 LLM 输出完全一致
+│ · 出处固定为课标 + 教材 + MOOC  │  标记 is_sample，界面明确提示
+└─────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────┐
 │ 持久化 + 三格式导出            │  JSON / Markdown / Word(.docx)
 └─────────────────────────────┘
         │
@@ -73,7 +80,9 @@
   "course": "课程名",
   "subject": "math",            // 学科ID，与知识图谱模块 SUBJECT_CATEGORIES 对齐
   "grade_level": "七年级",
-  "scope": "范围边界说明",
+  "scope": "范围边界说明（一段话，含课程、学段、单元数、内容数、课时）",
+  "scope_included": ["第1单元 …（4 条）", "第2单元 …"],   // 明确覆盖什么
+  "scope_excluded": ["不覆盖/仅作了解的内容"],            // 明确不覆盖什么
   "units": [                    // 学习内容与要求清单
     {
       "name": "单元名",
@@ -108,7 +117,7 @@
 
 | 依赖 | 缺失时的行为 |
 |------|------------|
-| LLM API Key（`DEEPSEEK_API_KEY` / `QWEN_API_KEY` / `HUNYUAN_API_KEY` 任一，写在 `backend/.env`） | 返回 503 并提示配置；请求带 `fallback_sample=true` 可查看内置示例 |
+| LLM API Key（`DEEPSEEK_API_KEY` / `QWEN_API_KEY` / `HUNYUAN_API_KEY` 任一，写在 `backend/.env`） | 自动降级为**离线知识包引擎**（不再报错）：匹配到内置包即产出完整大纲，并在界面标注「离线知识包，未调用大模型」；未匹配才返回 503 并给出可用课程清单 |
 | `duckduckgo-search`（已加入 requirements.txt） | 跳过联网检索，LLM 依据权威课标知识梳理，材料出处仍给官方链接 |
 | `python-docx`（requirements.txt 已有） | 仅影响 Word 导出，其余格式不受影响 |
 
@@ -120,7 +129,9 @@
 - `app/services/curriculum_service.py` — 检索/梳理/导出核心服务
 - `app/api/v1/curriculum.py` — 4 个端点
 - `migrations/versions/f6b7c8d9e401_add_curriculum_outlines.py` — 建表迁移
-- `app/data/sample_outline_math_7a.json` — 内置示例大纲
+- `app/data/sample_outline_math_7a.json` — 内置示例大纲（初中数学七上）
+- `app/data/curriculum_packs.json` — 内置知识包（14 个课程/学科框架，离线梳理依据）
+- `migrations/versions/b2c3d4e5f6a7_backfill_user_tenant.py` — 历史用户租户回填（修复 500，见第 9 节）
 
 **前端**
 - `src/services/curriculum.ts` — API 封装 + 类型
@@ -145,3 +156,63 @@
 | 知识图谱 | 11 个 KnowledgeNode / 13 条关系，`/graphs/subjects/math/graph` 返回 7 节点 12 链接 |
 
 配置 LLM Key 后，同一接口会走「联网检索 + 大模型梳理」的真实链路（首次约 30~90 秒）。
+
+## 8. 离线知识包引擎（无大模型 Key 也能完整交付）
+
+`backend/app/data/curriculum_packs.json` 内置 14 个知识包，结构与大模型输出的 JSON 完全一致（单元 / 内容要求 / 必要联系 / 材料出处），
+因此**离线结果与在线结果走同一套渲染、导出、入库与学情消费链路**，只是内容来源不同。
+
+| 类型 | 知识包 | 规模（单元 / 内容 / 联系 / 出处） |
+|---|---|---|
+| 专门课程 | 数据结构（含「二叉树」重点范围标注） | 7 / 35 / 12 / 4 |
+| 专门课程 | 高等数学（微积分） | 7 / 25 / 8 / 3 |
+| 专门课程 | 线性代数 | 5 / 13 / 7 / 3 |
+| 专门课程 | 大学物理 | 6 / 18 / 9 / 3 |
+| 专门课程 | 计算机网络 | 5 / 14 / 6 / 3 |
+| 示例课程 | 初中数学七年级上册（人教版） | 5 / 18 / 8 / 3 |
+| 学科框架 | 中学数学 / 中学物理 | 3 / 9 |
+| 学科框架 | 化学 / 生物学 / 语文 / 英语 / 历史 / 地理 / 思想政治 | 3–4 单元 / 9–12 条 |
+
+匹配规则（`CurriculumService._score_pack`）：
+
+1. 课程名命中 +8，关键词命中 +2~3，学科命中 +4，年级命中 +1；
+2. **学段互斥惩罚 −8**：用户输入「初中物理」时《大学物理》不会命中，改由《中学物理》框架承接，避免超纲；
+3. 得分 < 3 视为未匹配，返回 503 并列出可用课程，绝不硬套无关内容；
+4. 命中后在 `scope` 中写明课程、学段、单元数、内容数、课时，以及「限定重点」落在哪些单元/条目；
+   `scope_included` 列出覆盖的单元，`scope_excluded` 列出不覆盖或仅作了解的内容 → 直接对应赛题「范围清楚」。
+
+> 提示：配置任意一家 API Key 后，同一入口会自动切换为「联网检索 + 大模型梳理」，产出会细化到具体教材版本与章节。
+
+## 9. 2026-11-10 修复记录：500 服务器内部错误
+
+**现象**：课程梳理页面点击「开始梳理」后顶部提示「服务器内部错误」，页面底部 `Request failed with status code 500`。
+
+**根因**：自注册用户（如 `3511415754@qq.com`）注册时未写 `users.tenant_id`，接口里 `current_user.tenant_id or 0` 把 `NULL` 兜底成 `0`，
+而 `curriculum_outlines.tenant_id` 有外键指向 `tenants(id)`，插入 `tenant_id=0` 直接触发
+
+```
+asyncpg.exceptions.ForeignKeyViolationError:
+insert or update on table "curriculum_outlines" violates foreign key constraint
+DETAIL: Key (tenant_id)=(0) is not present in table "tenants".
+```
+
+**修复（三层）**：
+
+| 层次 | 改动 | 作用 |
+|---|---|---|
+| 认证层 | `app/dependencies.py::get_current_user` 发现 `user.tenant_id is None` 时自动归属默认租户（`MIN(tenants.id)`）并落库 | 一次性修好所有 `tenant_id or 0` 的模块（笔记/课堂/诊断/导出等 19 张表同理） |
+| 注册流程 | `app/services/auth_service.py::register` 创建用户时写入默认租户 | 新用户不再产生脏数据 |
+| 数据层 | 迁移 `b2c3d4e5f6a7_backfill_user_tenant.py` 回填历史 NULL 用户，并在 `tenants` 为空时补建默认租户 | 老数据一次性修正，可随迁移复制到任何环境 |
+
+**复测（同一输入：数据结构 / 大二 / 范围「二叉树」/ 联网检索开启）**：
+
+| 检查项 | 修复前 | 修复后 |
+|---|---|---|
+| POST `/curriculum/outlines` | 500（外键冲突） | 200，7 单元 / 35 条内容 / 12 条联系 / 4 条出处 |
+| 页面提示 | 服务器内部错误 | 正常展示大纲 + 成果概览 + 范围边界 |
+| 生成耗时 | — | 0.9 s（离线知识包，联网检索失败自动跳过） |
+| Markdown 导出 | — | 200，15,692 B |
+| Word 导出 | — | 200，43,603 B（`PK` 头校验通过） |
+| 其他课程 | — | 高等数学 / 线性代数 / 大学物理 / 初中数学七上 / 中学物理 / 中学数学 / 化学 / 生物 / 语文 / 英语 / 历史 / 地理 / 政治 / 计算机网络 全部 200 |
+
+样例成果见 `docs/samples/`：`数据结构(二叉树)_学习内容与要求梳理.{md,docx,json}`、`初中数学七上_学习内容与要求梳理.md`。

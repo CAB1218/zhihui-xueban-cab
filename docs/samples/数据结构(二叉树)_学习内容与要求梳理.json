@@ -1,0 +1,460 @@
+{
+  "course": "数据结构",
+  "subject": "cs",
+  "subject_name": "计算机科学与技术",
+  "grade_level": "大二",
+  "scope": "本次梳理限于《数据结构》（大二）范围，共 7 个单元、35 条学习内容、建议 87 课时。限定重点为「二叉树」，涉及单元：树与二叉树、查找（共命中 6 条内容：二叉树的定义与性质、二叉树的存储结构、二叉树的遍历、线索二叉树、树、森林与二叉树的转换、平衡二叉树（AVL））。其余单元保留在清单中作为完整课程框架，不因限定而删减。范围外内容（先修课程、后续课程、拓展专题）只在「必要联系」中提示，不计入本清单的要求。",
+  "scope_included": [
+    "第1单元 绪论与算法分析（4 条）",
+    "第2单元 线性表（5 条）",
+    "第3单元 栈与队列（4 条）",
+    "第4单元 树与二叉树（7 条）",
+    "第5单元 图（5 条）",
+    "第6单元 查找（5 条）",
+    "第7单元 排序（5 条）"
+  ],
+  "scope_excluded": [
+    "高级树结构实现细节（AVL 旋转、红黑树、B/B+ 树仅作了解，不要求手写）",
+    "图的高级算法（网络流、二分图匹配、强连通分量）",
+    "外部排序与海量数据处理（作为延伸阅读）"
+  ],
+  "units": [
+    {
+      "name": "绪论与算法分析",
+      "description": "建立数据结构的基本概念体系，学会用渐近记号度量算法效率，为后续所有结构的取舍提供统一评价尺度。",
+      "contents": [
+        {
+          "topic": "数据结构基本概念与术语",
+          "description": "数据、数据元素、数据项；逻辑结构（集合/线性/树/图）与存储结构（顺序/链式/索引/散列）",
+          "requirement": "理解数据、数据元素与数据结构的含义，能区分四种基本逻辑结构并说明其存储实现方式",
+          "requirement_level": "理解",
+          "cognitive_level": "understand",
+          "suggested_hours": 2.0
+        },
+        {
+          "topic": "抽象数据类型（ADT）",
+          "description": "ADT 的定义、三元组表示与实现分离思想",
+          "requirement": "理解抽象数据类型的定义方法，能用（D,S,P）三元组描述一个 ADT 并给出其 C/Java 接口",
+          "requirement_level": "理解",
+          "cognitive_level": "understand",
+          "suggested_hours": 1.0
+        },
+        {
+          "topic": "算法及其特性",
+          "description": "算法的有穷性、确定性、可行性、输入与输出；好算法的评价标准",
+          "requirement": "了解算法的五个特性与评价标准，能判断给定过程是否为算法",
+          "requirement_level": "了解",
+          "cognitive_level": "remember",
+          "suggested_hours": 1.0
+        },
+        {
+          "topic": "算法复杂度分析",
+          "description": "时间复杂度与空间复杂度；大 O 记号、常见渐进阶比较",
+          "requirement": "掌握用大 O 记号分析典型语句段（循环嵌套、递归）的时间复杂度，能比较常见渐进阶的增长速度",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 3.0
+        }
+      ],
+      "textbook_ref": "严蔚敏《数据结构（C语言版）》第 1 章"
+    },
+    {
+      "name": "线性表",
+      "description": "最基础的线性结构，顺序存储与链式存储的差异是理解后续栈、队列、串的公共基础。",
+      "contents": [
+        {
+          "topic": "线性表的逻辑结构与基本操作",
+          "description": "线性表定义；初始化、插入、删除、查找、遍历等基本操作集合",
+          "requirement": "理解线性表的定义与基本操作集合，能用 ADT 形式描述一个线性表",
+          "requirement_level": "理解",
+          "cognitive_level": "understand",
+          "suggested_hours": 2.0
+        },
+        {
+          "topic": "顺序表及其实现",
+          "description": "一维数组存储；插入删除的元素移动；随机存取特性",
+          "requirement": "掌握顺序表的存储特点与插入、删除操作实现，能分析其平均移动次数与 O(n) 时间复杂度",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 3.0
+        },
+        {
+          "topic": "单链表",
+          "description": "结点结构、头指针与头结点、建立（头插/尾插）、插入删除、遍历",
+          "requirement": "掌握单链表的建立、查找、插入与删除，能正确书写指针操作并避免断链与内存泄漏",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 4.0
+        },
+        {
+          "topic": "双链表与循环链表",
+          "description": "双向链表的前驱/后继指针；循环链表的判尾条件",
+          "requirement": "理解双向链表与循环链表的结构差异，能针对插入删除频繁或需双向遍历的场景选择合适形式",
+          "requirement_level": "理解",
+          "cognitive_level": "understand",
+          "suggested_hours": 2.0
+        },
+        {
+          "topic": "线性表的应用",
+          "description": "有序表归并、一元多项式表示与求值、约瑟夫环",
+          "requirement": "能运用顺序表或链表解决有序表归并、多项式求和等实际问题，并说明所选存储结构的理由",
+          "requirement_level": "运用",
+          "cognitive_level": "apply",
+          "suggested_hours": 2.0
+        }
+      ],
+      "textbook_ref": "严蔚敏《数据结构（C语言版）》第 2 章"
+    },
+    {
+      "name": "栈与队列",
+      "description": "操作受限的线性表，是递归、表达式求值、树与图遍历的实现基础。",
+      "contents": [
+        {
+          "topic": "栈的定义与顺序栈",
+          "description": "后进先出（LIFO）；top 指针；上溢与下溢判断",
+          "requirement": "理解栈的 LIFO 特性，掌握顺序栈的入栈、出栈与溢出判断实现",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 2.0
+        },
+        {
+          "topic": "链栈",
+          "description": "以链表实现栈；多栈共享空间",
+          "requirement": "了解链栈的实现方式与适用场景（栈容量不确定或需多栈共享空间）",
+          "requirement_level": "了解",
+          "cognitive_level": "remember",
+          "suggested_hours": 1.0
+        },
+        {
+          "topic": "队列与循环队列",
+          "description": "先进先出（FIFO）；循环队列的队空队满判定；链队列",
+          "requirement": "掌握循环队列判空判满条件（牺牲一个单元或设计数器）与入队出队实现",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 3.0
+        },
+        {
+          "topic": "栈与队列的典型应用",
+          "description": "括号匹配、表达式求值与中缀转后缀；层次遍历、BFS 与缓冲队列",
+          "requirement": "能运用栈实现括号匹配与表达式求值，运用队列实现层次遍历与广度优先搜索",
+          "requirement_level": "运用",
+          "cognitive_level": "apply",
+          "suggested_hours": 3.0
+        }
+      ],
+      "textbook_ref": "严蔚敏《数据结构（C语言版）》第 3 章"
+    },
+    {
+      "name": "树与二叉树",
+      "description": "本单元是树形结构的核心，也是本次限定范围「二叉树」的主体：二叉树的定义、性质、存储、遍历与线索化。",
+      "contents": [
+        {
+          "topic": "树的定义与基本术语",
+          "description": "树与森林；结点、度、叶子、层次、深度、高度、路径",
+          "requirement": "理解树与森林的定义，掌握结点度、层次、深度、高度等术语并能对给定树进行标注",
+          "requirement_level": "理解",
+          "cognitive_level": "understand",
+          "suggested_hours": 2.0
+        },
+        {
+          "topic": "二叉树的定义与性质",
+          "description": "二叉树五种基本形态；性质 1–5；完全二叉树与满二叉树",
+          "requirement": "掌握二叉树的五条基本性质（第 i 层结点数、深度为 k 的结点数、叶子与度为 2 结点关系、完全二叉树编号关系），能推导并用于解题",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 3.0
+        },
+        {
+          "topic": "二叉树的存储结构",
+          "description": "顺序存储（完全二叉树友好）；二叉链表（lchild/rchild/data）；三叉链表",
+          "requirement": "理解顺序存储与链式存储的适用条件，能根据树的形态选择合适的存储结构并说明理由",
+          "requirement_level": "理解",
+          "cognitive_level": "apply",
+          "suggested_hours": 2.0
+        },
+        {
+          "topic": "二叉树的遍历",
+          "description": "先序、中序、后序（递归与非递归）、层次遍历；由两种遍历序列唯一确定二叉树",
+          "requirement": "掌握先序、中序、后序的递归与非递归实现及层次遍历算法，能由「先序+中序」或「后序+中序」唯一还原二叉树",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 5.0
+        },
+        {
+          "topic": "线索二叉树",
+          "description": "线索化思想；中序线索二叉树的构造与遍历",
+          "requirement": "理解线索化的目的与实现方法，能在中序线索二叉树中查找前驱与后继",
+          "requirement_level": "理解",
+          "cognitive_level": "understand",
+          "suggested_hours": 2.0
+        },
+        {
+          "topic": "树、森林与二叉树的转换",
+          "description": "孩子兄弟表示法；树与森林转二叉树；遍历对应关系",
+          "requirement": "掌握「孩子兄弟表示法」，能完成树/森林与二叉树的双向转换，并说明先序与后序对应的森林遍历",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 2.0
+        },
+        {
+          "topic": "哈夫曼树与哈夫曼编码",
+          "description": "带权路径长度 WPL；哈夫曼算法；前缀编码",
+          "requirement": "能构造哈夫曼树并计算 WPL，据生成的前缀编码对字符集进行压缩编码",
+          "requirement_level": "运用",
+          "cognitive_level": "apply",
+          "suggested_hours": 3.0
+        }
+      ],
+      "textbook_ref": "严蔚敏《数据结构（C语言版）》第 6 章 6.1–6.4"
+    },
+    {
+      "name": "图",
+      "description": "多对多关系的数据结构，遍历、最小生成树与最短路径是工程中最常用的一类算法。",
+      "contents": [
+        {
+          "topic": "图的基本概念与存储结构",
+          "description": "有向/无向、度、路径、连通性、生成树；邻接矩阵与邻接表",
+          "requirement": "理解图的基本术语，掌握邻接矩阵与邻接表的构造、空间代价与适用场景",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 3.0
+        },
+        {
+          "topic": "图的遍历",
+          "description": "深度优先搜索（DFS）与广度优先搜索（BFS）；遍历序列与复杂度",
+          "requirement": "掌握基于邻接矩阵与邻接表的 DFS、BFS 实现，能写出遍历序列并分析时间复杂度",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 3.0
+        },
+        {
+          "topic": "最小生成树",
+          "description": "Prim 与 Kruskal 算法；并查集在 Kruskal 中的应用",
+          "requirement": "理解 Prim 与 Kruskal 的贪心思想与适用图类型，能对给定带权图手工求出最小生成树",
+          "requirement_level": "理解",
+          "cognitive_level": "apply",
+          "suggested_hours": 3.0
+        },
+        {
+          "topic": "最短路径",
+          "description": "Dijkstra、Bellman-Ford、Floyd 算法",
+          "requirement": "理解 Dijkstra 与 Floyd 的适用条件与执行过程，能按步骤表求出单源或多源最短路径",
+          "requirement_level": "理解",
+          "cognitive_level": "apply",
+          "suggested_hours": 3.0
+        },
+        {
+          "topic": "拓扑排序与关键路径",
+          "description": "AOV 网与拓扑序列；AOE 网与关键路径",
+          "requirement": "了解 AOV/AOE 网，能用拓扑排序判断有向图是否存在环，能求出关键路径与工程最短工期",
+          "requirement_level": "了解",
+          "cognitive_level": "understand",
+          "suggested_hours": 3.0
+        }
+      ],
+      "textbook_ref": "严蔚敏《数据结构（C语言版）》第 7 章"
+    },
+    {
+      "name": "查找",
+      "description": "从线性查找到树形查找再到散列查找，体现「以结构换效率」的典型演进。",
+      "contents": [
+        {
+          "topic": "顺序查找与折半查找",
+          "description": "哨兵设置；折半查找判定树；平均查找长度 ASL",
+          "requirement": "掌握折半查找的执行过程与判定树构造，能计算成功与失败的平均查找长度",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 2.0
+        },
+        {
+          "topic": "二叉排序树",
+          "description": "BST 的定义、查找、插入与删除；退化情形",
+          "requirement": "掌握二叉排序树的查找、插入与删除（含双子结点情形），能说明其退化为单支树的原因",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 3.0
+        },
+        {
+          "topic": "平衡二叉树（AVL）",
+          "description": "平衡因子；LL/RR/LR/RL 四种旋转",
+          "requirement": "了解平衡因子与四种旋转调整方式，能判断插入后是否需要调整及调整类型",
+          "requirement_level": "了解",
+          "cognitive_level": "understand",
+          "suggested_hours": 2.0
+        },
+        {
+          "topic": "B 树与 B+ 树",
+          "description": "多路平衡查找树；数据库与文件系统索引",
+          "requirement": "了解 B 树与 B+ 树的结构特点与差异，能说明其在磁盘索引中的优势",
+          "requirement_level": "了解",
+          "cognitive_level": "remember",
+          "suggested_hours": 2.0
+        },
+        {
+          "topic": "散列表",
+          "description": "散列函数；冲突处理（开放定址、链地址法）；装填因子",
+          "requirement": "掌握常用散列函数与冲突处理方法，能计算装填因子并估算平均查找长度",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 3.0
+        }
+      ],
+      "textbook_ref": "严蔚敏《数据结构（C语言版）》第 9 章"
+    },
+    {
+      "name": "排序",
+      "description": "按时间复杂度、空间复杂度、稳定性三条线索组织各类内部排序，并给出选择依据。",
+      "contents": [
+        {
+          "topic": "插入类排序",
+          "description": "直接插入排序、希尔排序",
+          "requirement": "掌握直接插入排序与希尔排序的执行过程，能分析其时间复杂度与稳定性",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 2.0
+        },
+        {
+          "topic": "交换类排序",
+          "description": "冒泡排序、快速排序（划分与递归）",
+          "requirement": "掌握冒泡排序与快速排序实现，能分析快排平均 O(nlogn) 与最坏 O(n²) 的成因",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 3.0
+        },
+        {
+          "topic": "选择类排序",
+          "description": "简单选择排序、堆排序（建堆与调整）",
+          "requirement": "掌握堆的构造与筛选调整过程，能实现堆排序并说明其与完全二叉树的对应关系",
+          "requirement_level": "掌握",
+          "cognitive_level": "apply",
+          "suggested_hours": 3.0
+        },
+        {
+          "topic": "归并排序与基数排序",
+          "description": "二路归并；链式基数排序",
+          "requirement": "理解归并排序的分治过程与基数排序的适用条件，能分析其时间与空间代价",
+          "requirement_level": "理解",
+          "cognitive_level": "apply",
+          "suggested_hours": 2.0
+        },
+        {
+          "topic": "排序算法的比较与选择",
+          "description": "时间/空间复杂度、稳定性、适用数据规模",
+          "requirement": "能依据数据规模、初始有序度与稳定性要求，在多类排序算法中做出合理选择并说明理由",
+          "requirement_level": "运用",
+          "cognitive_level": "evaluate",
+          "suggested_hours": 2.0
+        }
+      ],
+      "textbook_ref": "严蔚敏《数据结构（C语言版）》第 10 章"
+    }
+  ],
+  "connections": [
+    {
+      "from_topic": "算法复杂度分析",
+      "to_topic": "顺序表及其实现",
+      "link_type": "prerequisite",
+      "description": "先用复杂度建立效率度量，才能解释顺序表插入删除需 O(n) 元素移动、链表只需改指针的取舍差异"
+    },
+    {
+      "from_topic": "线性表的逻辑结构与基本操作",
+      "to_topic": "栈的定义与顺序栈",
+      "link_type": "prerequisite",
+      "description": "栈与队列是操作受限的线性表，只需在掌握线性表存储与基本操作后增加「仅在表尾/表头操作」的约束"
+    },
+    {
+      "from_topic": "栈的定义与顺序栈",
+      "to_topic": "二叉树的遍历",
+      "link_type": "prerequisite",
+      "description": "二叉树的非递归遍历要用显式栈保存回溯路径，栈的实现是理解非递归算法的前提"
+    },
+    {
+      "from_topic": "二叉树的遍历",
+      "to_topic": "线索二叉树",
+      "link_type": "prerequisite",
+      "description": "先掌握遍历中「前驱/后继」的访问顺序，线索化才有明确的目标"
+    },
+    {
+      "from_topic": "二叉树的遍历",
+      "to_topic": "哈夫曼树与哈夫曼编码",
+      "link_type": "prerequisite",
+      "description": "哈夫曼树的构造与编码译码需按层次访问结点，遍历是验证编码正确性的手段"
+    },
+    {
+      "from_topic": "二叉树的遍历",
+      "to_topic": "图的遍历",
+      "link_type": "related",
+      "description": "树是连通无环图：先序/DFS 同源、层次/BFS 同源，可把树的遍历经验直接迁移到图，只需补上「访问标记」防止回路"
+    },
+    {
+      "from_topic": "二叉树的定义与性质",
+      "to_topic": "堆排序",
+      "link_type": "prerequisite",
+      "description": "堆本质是完全二叉树的顺序存储，只有理解完全二叉树编号关系，才能写出父子下标换算"
+    },
+    {
+      "from_topic": "二叉排序树",
+      "to_topic": "平衡二叉树（AVL）",
+      "link_type": "prerequisite",
+      "description": "AVL 是针对 BST 退化问题的改进，先理解 BST 的查找路径才理解旋转调整的目标"
+    },
+    {
+      "from_topic": "图的遍历",
+      "to_topic": "最短路径",
+      "link_type": "prerequisite",
+      "description": "Dijkstra/BFS 类算法都建立在遍历骨架之上，遍历顺序决定了距离更新的正确性"
+    },
+    {
+      "from_topic": "栈与队列的典型应用",
+      "to_topic": "图的遍历",
+      "link_type": "related",
+      "description": "BFS 直接用队列、DFS 可用栈迭代实现，队列/栈的选择决定了遍历策略"
+    },
+    {
+      "from_topic": "离散数学（集合、关系、图论基础）",
+      "to_topic": "图的基本概念与存储结构",
+      "link_type": "cross_subject",
+      "description": "图论中的顶点、边、连通分支等概念来自离散数学，可把抽象的二元关系具体化为邻接矩阵"
+    },
+    {
+      "from_topic": "线性代数（矩阵）",
+      "to_topic": "图的基本概念与存储结构",
+      "link_type": "cross_subject",
+      "description": "邻接矩阵即图的矩阵表示，矩阵乘法可用于计算路径条数，是图算法的代数视角"
+    }
+  ],
+  "sources": [
+    {
+      "title": "《数据结构（C语言版）》严蔚敏、吴伟民",
+      "url": "https://www.tup.tsinghua.edu.cn",
+      "source_type": "textbook",
+      "publisher": "清华大学出版社",
+      "usage": "确定单元划分与章节出处（第1、2、3、6、7、9、10章），内容要求以该书教学大纲为基准"
+    },
+    {
+      "title": "《计算机类专业教学质量国家标准》",
+      "url": "http://www.moe.gov.cn",
+      "source_type": "curriculum_standard",
+      "publisher": "教育部高等学校计算机类专业教学指导委员会",
+      "usage": "界定「数据结构与算法」课程在专业培养方案中的定位与能力要求，作为要求表述的上位依据"
+    },
+    {
+      "title": "《算法导论（第3版）》Cormen 等著",
+      "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/",
+      "source_type": "textbook",
+      "publisher": "机械工业出版社 / MIT Press",
+      "usage": "校核复杂度分析与排序、图算法的表述精度"
+    },
+    {
+      "title": "中国大学MOOC《数据结构》（浙江大学 陈越、何钦铭）",
+      "url": "https://www.icourse163.org/course/ZJU-93001",
+      "source_type": "web",
+      "publisher": "高等教育出版社 / 爱课程网",
+      "usage": "对照课程实际讲授顺序与课时安排，校准建议课时"
+    }
+  ],
+  "generated_at": "2026-11-10T13:16:20.237491+00:00",
+  "model": "离线知识包·数据结构",
+  "used_web_search": false,
+  "is_sample": true
+}
