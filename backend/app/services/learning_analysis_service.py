@@ -120,6 +120,21 @@ class QualityResult:
         return len(self.valid)
 
 
+_CN_DIGITS = "一二三四五六七八九十"
+
+
+class _SectionNumber:
+    """报告章节自动编号，避免某些小节为空时出现「一二六」这样的跳号"""
+
+    def __init__(self, start: int = 1) -> None:
+        self.n = start
+
+    def title(self, text: str) -> str:
+        num = _CN_DIGITS[self.n - 1] if self.n <= len(_CN_DIGITS) else str(self.n)
+        self.n += 1
+        return f"## {num}、{text}"
+
+
 def _to_view(r: LearningRecord) -> RecordView:
     return RecordView(
         id=r.id,
@@ -842,13 +857,16 @@ class LearningAnalysisService:
             f"**{quality.valid_count}** 条。各类问题及处理方式如下："
         )
         lines.append("")
-        lines.append("| 问题类型 | 具体问题 | 条数 | 处理方式 |")
-        lines.append("|---|---|---:|---|")
-        type_label = {"missing": "缺失", "abnormal": "异常", "duplicate": "重复"}
-        for it in quality.issues:
-            lines.append(
-                f"| {type_label.get(it['type'], it['type'])} | {it['title']} | {it['count']} | {it['handling']} |"
-            )
+        if quality.issues:
+            lines.append("| 问题类型 | 具体问题 | 条数 | 处理方式 |")
+            lines.append("|---|---|---:|---|")
+            type_label = {"missing": "缺失", "abnormal": "异常", "duplicate": "重复"}
+            for it in quality.issues:
+                lines.append(
+                    f"| {type_label.get(it['type'], it['type'])} | {it['title']} | {it['count']} | {it['handling']} |"
+                )
+        else:
+            lines.append("本次数据未发现缺失、异常或重复问题，全部记录可直接用于分析。")
         lines.append("")
         lines.append("**处理过程（条数变化）**")
         lines.append("")
@@ -873,7 +891,8 @@ class LearningAnalysisService:
         skip_notes = skip_notes or set()
         lines: List[str] = []
         o = d["overall"]
-        lines.append("## 二、学习情况摘要")
+        sec = _SectionNumber(start=2)  # 第一节是数据质量检查
+        lines.append(sec.title("学习情况摘要"))
         lines.append("")
         lines.append(f"- 有效作答：**{o['attempts']}** 次（可判断对错）")
         lines.append(f"- 覆盖知识点：**{o['knowledge_point_count']}** 个")
@@ -885,7 +904,7 @@ class LearningAnalysisService:
         lines.append("")
 
         if d["needs_consolidation"]:
-            lines.append("## 三、需要巩固的内容")
+            lines.append(sec.title("需要巩固的内容"))
             lines.append("")
             lines.append("| 知识点 | 作答次数 | 正确次数 | 正确率 | 依据记录 |")
             lines.append("|---|---:|---:|---:|---|")
@@ -898,21 +917,21 @@ class LearningAnalysisService:
             lines.append("")
 
         if d["fair_areas"]:
-            lines.append("## 四、基本掌握、建议适度巩固的内容")
+            lines.append(sec.title("基本掌握、建议适度巩固的内容"))
             lines.append("")
             for k in d["fair_areas"]:
                 lines.append(f"- **{k['knowledge_point']}**：{k['evidence_text']}")
             lines.append("")
 
         if d["strengths"]:
-            lines.append("## 五、已掌握较好的内容")
+            lines.append(sec.title("已掌握较好的内容"))
             lines.append("")
             for k in d["strengths"]:
                 lines.append(f"- **{k['knowledge_point']}**：{k['evidence_text']}（记录 #{'、#'.join(str(i) for i in k['evidence_record_ids'][:4])}）")
             lines.append("")
 
         if d["insufficient_evidence"]:
-            lines.append("## 六、信息不足、尚不能判断的内容")
+            lines.append(sec.title("信息不足、尚不能判断的内容"))
             lines.append("")
             lines.append(
                 f"以下知识点的作答次数少于 {d['thresholds']['min_attempts']} 次，"
@@ -924,7 +943,7 @@ class LearningAnalysisService:
                 lines.append(f"- **{k['knowledge_point']}**：仅 {k['attempts']} 次作答（{k['evidence_text']}）")
             lines.append("")
 
-        lines.append("## 七、说明")
+        lines.append(sec.title("说明"))
         lines.append("")
         for n in d["data_notes"]:
             if n in skip_notes:
@@ -942,7 +961,8 @@ class LearningAnalysisService:
         skip_notes = skip_notes or set()
         lines: List[str] = []
         c = d["cohort"]
-        lines.append("## 二、班级学习情况摘要")
+        sec = _SectionNumber(start=2)
+        lines.append(sec.title("班级学习情况摘要"))
         lines.append("")
         lines.append(f"- 参与学生：**{c['students_total']}** 人，其中 **{c['students_judged']}** 人有可判断记录")
         lines.append(
@@ -958,7 +978,7 @@ class LearningAnalysisService:
             lines.append(f"- 班级整体正确率：**{d['overall']['accuracy'] * 100:.1f}%**")
         lines.append("")
 
-        lines.append("## 三、共性问题（多名学生同时薄弱）")
+        lines.append(sec.title("共性问题（多名学生同时薄弱）"))
         lines.append("")
         if d["common_weak_points"]:
             lines.append("| 知识点 | 整体正确率 | 薄弱人数 | 薄弱占比 | 依据 |")
@@ -972,7 +992,7 @@ class LearningAnalysisService:
             lines.append("按当前口径（≥50% 学生正确率低于 60%）未发现共性薄弱点。")
         lines.append("")
 
-        lines.append("## 四、值得关注的差异")
+        lines.append(sec.title("值得关注的差异"))
         lines.append("")
         if "accuracy" in d["differences"]:
             lines.append(f"- **正确率差异**：{d['differences']['accuracy']['evidence_text']}")
@@ -986,7 +1006,7 @@ class LearningAnalysisService:
                 lines.append(f"- **{n['student_name']}**：{n['note']}")
             lines.append("")
 
-        lines.append("## 五、分析维度与实际数据的匹配情况")
+        lines.append(sec.title("分析维度与实际数据的匹配情况"))
         lines.append("")
         lines.append("| 分析维度 | 数据可用率 | 是否采用 | 说明 |")
         lines.append("|---|---:|---|---|")
@@ -997,7 +1017,7 @@ class LearningAnalysisService:
             )
         lines.append("")
 
-        lines.append("## 六、说明")
+        lines.append(sec.title("说明"))
         lines.append("")
         for n in d["data_notes"]:
             if n in skip_notes:
