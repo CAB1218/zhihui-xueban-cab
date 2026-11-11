@@ -89,6 +89,13 @@
                   <span class="agent-chat__model-option-status">{{ model.status === 'available' ? '可用' : '未配置' }}</span>
                 </div>
               </el-dropdown-item>
+              <el-dropdown-item divided command="__config">
+                <div class="agent-chat__model-option">
+                  <el-icon class="agent-chat__model-config-icon"><Setting /></el-icon>
+                  <span class="agent-chat__model-option-name">模型配置…</span>
+                  <span class="agent-chat__model-option-status">填 API Key</span>
+                </div>
+              </el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -182,6 +189,7 @@
 
     <!-- 导出对话框 -->
     <ExportDialog v-model="exportDialogVisible" />
+    <ModelConfigDialog v-model="modelConfigVisible" @changed="onModelConfigChanged" />
   </div>
 </template>
 
@@ -192,16 +200,24 @@
  */
 import { ref, onMounted, nextTick, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { Promotion, Plus, Delete, ChatDotRound, Download, ArrowDown } from '@element-plus/icons-vue'
+import { Promotion, Plus, Delete, ChatDotRound, Download, ArrowDown, Setting } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useAgentStore } from '@/stores/agent'
 import CitationList from './components/CitationList.vue'
 import ContextBadges from './components/ContextBadges.vue'
+import ModelConfigDialog from './components/ModelConfigDialog.vue'
 import ExportDialog from '@/components/agent/ExportDialog.vue'
 import type { Citation } from '@/services/agent'
 
 const agentStore = useAgentStore()
 const route = useRoute()
+
+/** 模型配置对话框（填 DeepSeek 等 API Key） */
+const modelConfigVisible = ref(false)
+
+async function onModelConfigChanged(): Promise<void> {
+  await agentStore.fetchModels()
+}
 
 const inputMessage = ref<string>('')
 const selectedAgentType = ref<string>('general')
@@ -240,7 +256,7 @@ const modelTooltip = computed<string>(() => {
   const count = agentStore.availableModelCount
   if (count >= 2) return `${count} 个模型可用`
   if (count === 1) return `仅 ${count} 个模型可用，可能降级`
-  return '无可用模型（演示模式）'
+  return '无可用模型，点击这里选择「模型配置」填 API Key'
 })
 
 /** 从消息 metadata 中提取引用来源 */
@@ -288,6 +304,10 @@ function handleTypeChange(): void {
 
 /** 切换模型偏好 */
 function handleModelChange(provider: string): void {
+  if (provider === '__config') {
+    modelConfigVisible.value = true
+    return
+  }
   const model = agentStore.models.find((m) => m.provider === provider)
   if (!model || model.status !== 'available') {
     ElMessage.warning('该模型当前不可用或未配置 API Key')
@@ -537,6 +557,11 @@ onMounted(async () => {
   &__model-option-status {
     font-size: 12px;
     color: #999;
+  }
+
+  &__model-config-icon {
+    font-size: 14px;
+    color: #666;
   }
 
   &__messages {

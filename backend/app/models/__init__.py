@@ -29,3 +29,4 @@ from app.models.evaluation import StudentEvaluation  # noqa: F401
 from app.models.curriculum import CurriculumOutline  # noqa: F401
 from app.models.learning_record import LearningRecord  # noqa: F401
 from app.models.course_schedule import CourseSchedule  # noqa: F401
+from app.models.llm_config import LlmProviderConfig  # noqa: F401

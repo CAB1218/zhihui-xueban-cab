@@ -56,6 +56,12 @@ class LLMRouter:
         self._priority: List[str] = []
         self._initialized: bool = False
         self._lock = asyncio.Lock()
+        # 页面配置（llm_provider_configs 表）的覆盖值，优先于 backend/.env
+        self._overrides: Dict[str, Dict[str, str]] = {}
+        # .env 基线，页面配置在此基础上覆盖
+        self._base_config: Dict[str, Dict[str, str]] = {}
+        # 上次从数据库对齐配置的时间（多 worker 场景做 TTL 轮询）
+        self._overrides_checked_at: float = 0.0
 
     async def _initialize(self) -> None:
         """从 settings 加载所有 Provider 配置（懒加载，线程安全）"""
@@ -65,27 +71,35 @@ class LLMRouter:
             if self._initialized:
                 return
 
-            # 构建 Provider 配置
-            providers_config = {
-                "deepseek": ModelProvider(
-                    provider="deepseek",
-                    api_key=settings.DEEPSEEK_API_KEY,
-                    api_base=settings.DEEPSEEK_API_BASE,
-                    model_name=settings.DEEPSEEK_MODEL,
-                ),
-                "qwen": ModelProvider(
-                    provider="qwen",
-                    api_key=settings.QWEN_API_KEY,
-                    api_base=settings.QWEN_API_BASE,
-                    model_name=settings.QWEN_MODEL,
-                ),
-                "hunyuan": ModelProvider(
-                    provider="hunyuan",
-                    api_key=settings.HUNYUAN_API_KEY,
-                    api_base=settings.HUNYUAN_API_BASE,
-                    model_name=settings.HUNYUAN_MODEL,
-                ),
+            # .env 里的基线配置，页面配置在此基础上覆盖
+            self._base_config = {
+                "deepseek": {
+                    "api_key": settings.DEEPSEEK_API_KEY,
+                    "api_base": settings.DEEPSEEK_API_BASE,
+                    "model_name": settings.DEEPSEEK_MODEL,
+                },
+                "qwen": {
+                    "api_key": settings.QWEN_API_KEY,
+                    "api_base": settings.QWEN_API_BASE,
+                    "model_name": settings.QWEN_MODEL,
+                },
+                "hunyuan": {
+                    "api_key": settings.HUNYUAN_API_KEY,
+                    "api_base": settings.HUNYUAN_API_BASE,
+                    "model_name": settings.HUNYUAN_MODEL,
+                },
             }
+
+            # 构建 Provider 配置（基线 + 页面覆盖）
+            providers_config = {}
+            for name in self._base_config:
+                fields = self._effective_fields(name)
+                providers_config[name] = ModelProvider(
+                    provider=name,
+                    api_key=fields["api_key"],
+                    api_base=fields["api_base"],
+                    model_name=fields["model_name"],
+                )
 
             self._providers = providers_config
 
@@ -105,6 +119,78 @@ class LLMRouter:
                 [p for p, v in self._providers.items() if v.is_configured],
             )
 
+    def _effective_fields(self, name: str) -> Dict[str, str]:
+        """基线（.env）+ 页面配置 → 当前生效的字段"""
+        base = (self._base_config or {}).get(name, {})
+        override = self._overrides.get(name, {})
+        return {
+            "api_key": override.get("api_key") or base.get("api_key", "") or "",
+            "api_base": override.get("api_base") or base.get("api_base", "") or "",
+            "model_name": override.get("model_name") or base.get("model_name", "") or "",
+        }
+
+    def _apply_fields(self) -> None:
+        """把生效字段刷到 Provider 上（Key 变了要重置熔断状态）"""
+        for name, provider in self._providers.items():
+            fields = self._effective_fields(name)
+            key_changed = provider.api_key != fields["api_key"]
+            provider.api_key = fields["api_key"]
+            provider.api_base = fields["api_base"]
+            provider.model_name = fields["model_name"]
+            if key_changed:
+                provider.is_available = True
+                provider.failure_count = 0
+                provider.last_error_msg = ""
+
+    async def apply_overrides(self, overrides: Dict[str, Dict[str, str]]) -> None:
+        """应用页面配置（AI 对话 → 模型配置）并立即生效
+
+        覆盖值来自 llm_provider_configs 表，优先级高于 backend/.env。
+        传入的 api_key/api_base/model_name 只覆盖出现的键，
+        因此可以只改模型名而保留原有 Key。
+        """
+        await self._initialize()
+        self._overrides = overrides or {}
+        self._apply_fields()
+        self._overrides_checked_at = time.time()
+
+        logger.info(
+            "LLMRouter 已应用页面配置: %s",
+            [p for p, v in self._providers.items() if v.is_configured],
+        )
+
+    async def refresh_overrides(self, ttl: float = 5.0) -> None:
+        """多 worker 下让页面保存的配置扩散到所有进程
+
+        uvicorn 起了 4 个 worker，每个进程各有一份内存配置；
+        保存接口只更新命中的那个 worker，其余 worker 通过 TTL 轮询数据库对齐。
+        """
+        now = time.time()
+        if now - self._overrides_checked_at < ttl:
+            return
+        self._overrides_checked_at = now
+        try:
+            from app.database import async_session_factory
+            from app.services import llm_config_service
+
+            async with async_session_factory() as session:
+                overrides = await llm_config_service.load_overrides(session)
+            if overrides != self._overrides:
+                await self.apply_overrides(overrides)
+        except Exception as e:  # noqa: BLE001 — 刷新失败不应影响对话主流程
+            logger.warning("刷新模型配置失败: %s", e)
+
+    def get_provider(self, name: str) -> Optional[ModelProvider]:
+        """按名称取 Provider 配置（不存在返回 None）"""
+        return self._providers.get(name)
+
+    async def reload(self) -> None:
+        """丢弃已加载的配置，下次调用时按 settings + overrides 重新初始化"""
+        async with self._lock:
+            self._initialized = False
+            self._providers = {}
+            self._priority = []
+
     async def get_model(
         self,
         scene_type: Optional[str] = None,
@@ -122,6 +208,7 @@ class LLMRouter:
             可用的 ModelProvider，若全部不可用则返回 None
         """
         await self._initialize()
+        await self.refresh_overrides()
 
         # 构建尝试顺序
         candidates: List[str] = []
@@ -185,6 +272,7 @@ class LLMRouter:
             若所有 Provider 不可用，返回降级标记。
         """
         await self._initialize()
+        await self.refresh_overrides()
 
         # v2 新增：配额检查
         if tenant_id:
@@ -349,6 +437,7 @@ class LLMRouter:
             每个输出 token 片段
         """
         await self._initialize()
+        await self.refresh_overrides()
 
         candidates = self._get_candidate_chain(scene_type, preferred)
 
@@ -392,6 +481,7 @@ class LLMRouter:
             每个 Provider 的健康状态列表
         """
         await self._initialize()
+        await self.refresh_overrides()
 
         results: List[Dict[str, Any]] = []
         for i, provider_name in enumerate(self._priority):

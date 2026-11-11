@@ -74,6 +74,44 @@ export interface ModelInfo {
   is_configured?: boolean
 }
 
+/** 服务商配置（AI 对话 → 模型配置），Key 只回显掩码 */
+export interface ModelProviderConfig {
+  provider: string
+  label: string
+  key_url: string
+  hint: string
+  api_base: string
+  model_name: string
+  has_key: boolean
+  key_masked: string
+  configured: boolean
+  source: 'page' | 'env' | 'none'
+  editable_key: boolean
+  env_key_masked: string
+  last_test_ok: boolean | null
+  last_test_message: string | null
+  last_test_at: string | null
+}
+
+export interface ModelConfigResponse {
+  providers: ModelProviderConfig[]
+  any_configured: boolean
+  can_edit: boolean
+}
+
+export interface ModelConfigUpdate {
+  api_key?: string
+  api_base?: string
+  model_name?: string
+  clear_key?: boolean
+}
+
+export interface ModelTestResult {
+  ok: boolean
+  message: string
+  latency_ms: number | null
+}
+
   /** 场景预设 */
 export interface ScenePreset {
   scene_type: string
@@ -237,6 +275,34 @@ export const agentApi = {
   async listModels(): Promise<ModelInfo[]> {
     const response = await api.get('/agents/models')
     return response.data as ModelInfo[]
+  },
+
+  // ============ 模型配置（AI 对话 → 模型配置） ============
+
+  /** 查看三家服务商的当前配置（Key 只返回掩码） */
+  async getModelConfig(): Promise<ModelConfigResponse> {
+    const res: any = await api.get('/agents/models/config')
+    return (res?.data ?? res) as ModelConfigResponse
+  },
+
+  /** 保存配置（填写 API Key / Base / 模型名），保存后立即生效 */
+  async saveModelConfig(provider: string, payload: ModelConfigUpdate): Promise<ModelConfigResponse> {
+    const res: any = await api.put(`/agents/models/config/${provider}`, payload)
+    return (res?.data ?? res) as ModelConfigResponse
+  },
+
+  /** 清除页面配置，回退到 backend/.env */
+  async resetModelConfig(provider: string): Promise<ModelConfigResponse> {
+    const res: any = await api.delete(`/agents/models/config/${provider}`)
+    return (res?.data ?? res) as ModelConfigResponse
+  },
+
+  /** 测试连通性：传了 api_key/base/model 就用临时值测试，否则测已保存的配置 */
+  async testModelConfig(provider: string, payload: ModelConfigUpdate = {}): Promise<ModelTestResult> {
+    const res: any = await api.post(`/agents/models/config/${provider}/test`, payload, {
+      timeout: 45000,
+    })
+    return (res?.data ?? res) as ModelTestResult
   },
 
   /** 获取场景预设列表 */

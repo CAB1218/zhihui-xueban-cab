@@ -52,6 +52,18 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning("otel_init_failed", error=str(e))
 
+    # 加载「AI 对话 → 模型配置」里保存的 API Key / Base / 模型名
+    # 页面配置优先于 backend/.env，加载后模型路由器立即可用
+    try:
+        from app.database import async_session_factory
+        from app.services import llm_config_service
+
+        async with async_session_factory() as session:
+            overrides = await llm_config_service.apply_to_router(session)
+        logger.info("llm_config_loaded", providers=list(overrides.keys()))
+    except Exception as e:
+        logger.warning("llm_config_load_failed", error=str(e))
+
     yield
 
     # 关闭事件

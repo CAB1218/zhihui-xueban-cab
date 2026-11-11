@@ -29,6 +29,7 @@ from app.api.v1.growth import router as growth_router
 from app.api.v1.curriculum import router as curriculum_router
 from app.api.v1.learning_analysis import router as learning_analysis_router
 from app.api.v1.schedule import router as schedule_router
+from app.api.v1.agent_model_config import router as agent_model_config_router
 
 # v1 总路由
 api_v1_router = APIRouter()
@@ -42,6 +43,10 @@ api_v1_router.include_router(graphs_router, prefix="/graphs", tags=["知识图�
 api_v1_router.include_router(notes_router, prefix="/notes", tags=["笔记"])
 api_v1_router.include_router(search_router, prefix="/search", tags=["搜索"])
 api_v1_router.include_router(agents_router, prefix="/agents", tags=["AI智能体"])
+# 模型服务商配置（AI 对话 → 模型配置）
+api_v1_router.include_router(
+    agent_model_config_router, prefix="/agents/models/config", tags=["模型配置"]
+)
 api_v1_router.include_router(teachers_router, prefix="/teachers", tags=["教师工作台"])
 api_v1_router.include_router(classrooms_router, prefix="/classrooms", tags=["课堂互动"])
 api_v1_router.include_router(notifications_router, prefix="/notifications", tags=["通知"])
