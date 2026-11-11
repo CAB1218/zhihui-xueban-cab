@@ -63,3 +63,4 @@ test_ws_cloud.py
 
 # Screenshots
 cloud-*.png
+frontend/dist-verify/
