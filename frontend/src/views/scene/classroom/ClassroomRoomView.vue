@@ -14,7 +14,7 @@
           <el-col :xs="24" :md="12">
             <div class="panel">
               <div class="panel__title">发起课堂（教师）</div>
-              <el-form label-width="80px" @submit.prevent="onCreate">
+              <el-form v-if="isTeacher" label-width="80px" @submit.prevent="onCreate">
                 <el-form-item label="课堂主题">
                   <el-input v-model="createForm.title" placeholder="如：一元二次方程 第2课时" clearable />
                 </el-form-item>
@@ -27,6 +27,9 @@
                   <el-button type="primary" :loading="creating" @click="onCreate">创建并进入课堂</el-button>
                 </el-form-item>
               </el-form>
+              <div v-else class="role-hint">
+                当前是学生账号，发起课堂需要教师身份。请用右侧「加入码」进入老师已开的课堂。
+              </div>
             </div>
           </el-col>
           <el-col :xs="24" :md="12">
@@ -248,7 +251,11 @@ async function loadLobby() {
   try {
     const [list, courseList] = await Promise.all([
       classroomApi.listClassrooms(),
-      api.get('/teachers/courses').then((res: any) => (res.data ?? []) as CourseOption[]).catch(() => []),
+      // 课程下拉只服务「发起课堂」，学生账号调 /teachers/courses 会被 RBAC 拦成 403，
+      // 页面就会莫名弹出「权限不足」。所以按角色决定要不要请求。
+      isTeacher.value
+        ? api.get('/teachers/courses').then((res: any) => (res.data ?? []) as CourseOption[]).catch(() => [])
+        : Promise.resolve([] as CourseOption[]),
     ])
     classrooms.value = list
     courses.value = courseList
@@ -474,6 +481,16 @@ onBeforeUnmount(stopPolling)
   color: var(--el-text-color-secondary);
   font-size: 13px;
   padding: 8px 0;
+}
+
+.role-hint {
+  margin-left: 80px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--el-color-info-light-9);
+  color: var(--el-text-color-regular);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .participant {

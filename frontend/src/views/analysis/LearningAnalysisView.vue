@@ -479,6 +479,7 @@ import {
   type StudentBrief,
 } from '@/services/learningAnalysis'
 import api from '@/services/api'
+import { useAuthStore } from '@/stores/auth'
 
 const IMPORT_STEPS = [
   '下载模板，按表头填写成绩或答题记录（也可直接用平台导出的成绩表，列名支持常见写法）',
@@ -514,6 +515,8 @@ const courseId = ref<number | undefined>(undefined)
 const selectedStudentId = ref<number | undefined>(undefined)
 const courses = ref<Array<{ id: number; name: string }>>([])
 
+const authStore = useAuthStore()
+
 function pct(v?: number | null): string {
   if (v === null || v === undefined) return '—'
   return `${(v * 100).toFixed(1)}%`
@@ -547,6 +550,12 @@ function statusTag(s: string): 'success' | 'primary' | 'warning' | 'info' {
 }
 
 async function loadCourses() {
+  // /teachers/courses 只对教师/管理员开放，学生调用会被 RBAC 拦成 403 并弹「权限不足」，
+  // 所以学生身份直接跳过，课程下拉留空即可（数据仍按全部课程统计）。
+  if (!authStore.isTeacher) {
+    courses.value = []
+    return
+  }
   try {
     const res: any = await api.get('/teachers/courses')
     const list = (res?.data ?? res) as any[]
