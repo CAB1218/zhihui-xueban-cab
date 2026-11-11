@@ -7,8 +7,9 @@ AI4Edu 大模型服务商配置 API
     DELETE /{provider}           清除页面配置，回退到 backend/.env
     POST   /{provider}/test      真实发一次最小请求，验证 Key 是否可用
 
-权限：查看对所有登录用户开放（前端用于展示模型状态），
-修改与测试仅限 admin / super_admin，避免普通学生替换全站模型。
+权限：查看、修改、测试都对所有登录用户开放（配置页在 AI 对话里，谁用谁配）。
+注意：配置是「全站共享」的一条记录，谁保存谁生效，前端会明确提示这一点。
+若某天需要「每人用自己的 Key」，再按 user_id 拆分记录即可（表里已有 updated_by）。
 """
 from typing import Optional
 
@@ -24,12 +25,10 @@ from app.services import llm_config_service as svc
 
 router = APIRouter()
 
-_WRITE_ROLES = {"admin", "super_admin"}
-
-
-def _ensure_admin(user: User) -> None:
-    if (user.role or "") not in _WRITE_ROLES:
-        raise AppException(code=403, message="仅管理员可以修改模型配置")
+def _ensure_active(user: User) -> None:
+    """任何已登录且未被禁用的用户都可以配置模型（谁用谁配）"""
+    if not user or not user.is_active:
+        raise AppException(code=403, message="账号已被禁用，无法修改模型配置")
 
 
 class LlmConfigUpdate(BaseModel):
@@ -50,7 +49,8 @@ class LlmTestRequest(BaseModel):
 
 
 def _can_edit(user: User) -> bool:
-    return (user.role or "") in _WRITE_ROLES
+    """所有人都可以编辑（配置是全局共享的，前端会提示影响范围）"""
+    return bool(user and user.is_active)
 
 
 async def _payload(db: AsyncSession, user: User) -> dict:
@@ -77,7 +77,7 @@ async def save_model_config(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> APIResponse:
-    _ensure_admin(current_user)
+    _ensure_active(current_user)
     if provider not in svc.PROVIDER_META:
         raise AppException(code=400, message=f"不支持的服务商: {provider}")
 
@@ -108,7 +108,7 @@ async def reset_model_config(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> APIResponse:
-    _ensure_admin(current_user)
+    _ensure_active(current_user)
     if provider not in svc.PROVIDER_META:
         raise AppException(code=400, message=f"不支持的服务商: {provider}")
     await svc.reset_config(db, provider)
@@ -122,7 +122,7 @@ async def test_model_connection(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> APIResponse:
-    _ensure_admin(current_user)
+    _ensure_active(current_user)
     if provider not in svc.PROVIDER_META:
         raise AppException(code=400, message=f"不支持的服务商: {provider}")
 

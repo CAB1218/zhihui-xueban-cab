@@ -66,7 +66,7 @@
               <el-button v-if="p.source === 'page'" link type="danger" :disabled="!canEdit" @click="onReset(p)">
                 清除页面配置
               </el-button>
-              <el-tag v-if="!canEdit" size="small" type="info" class="readonly">只读：仅管理员可修改</el-tag>
+              <el-tag v-if="!canEdit" size="small" type="info" class="readonly">只读：账号已禁用</el-tag>
             </el-form-item>
 
             <el-form-item v-if="tests[p.provider]" label=" ">
@@ -92,6 +92,7 @@
 
       <p class="model-config__footer-tip">
         保存后立即生效，无需重启后端；模型下拉里的状态会在几秒内刷新为「可用」。
+        这是<b>全站共享</b>的配置：谁保存谁生效，所有用户（含学生）都会使用这个 Key。
       </p>
     </div>
 
