@@ -144,6 +144,35 @@ export async function getOutline(id: number): Promise<CurriculumOutlineRecord> {
 }
 
 /**
+ * 导入课表 / 课程大纲文件（csv / xlsx / txt / md / json）
+ * 解析后直接生成一条可用的梳理记录，「材料出处」会如实标注为上传文件
+ */
+export async function importOutlineFile(file: File): Promise<CurriculumOutlineRecord> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const res: any = await api.post('/curriculum/import', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 120000,
+  })
+  return (res?.data ?? res) as CurriculumOutlineRecord
+}
+
+/** 下载课程梳理导入模板（CSV，UTF-8 BOM，可直接用 Excel 打开） */
+export async function downloadImportTemplate(): Promise<void> {
+  const res: any = await api.get('/curriculum/import/template', { responseType: 'blob' })
+  const raw: BlobPart = res?.data ?? res
+  const blob = raw instanceof Blob ? raw : new Blob([raw], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = '课表大纲导入模板.csv'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
+/**
  * 导出文件下载地址（需带 token，用 downloadExport 下载）
  */
 export function exportUrl(id: number, format: 'json' | 'md' | 'docx'): string {

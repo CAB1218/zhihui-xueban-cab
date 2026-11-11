@@ -170,6 +170,22 @@ export interface GroupReport {
   quality?: QualityResult
 }
 
+export interface ImportIssueRow {
+  row: number
+  reasons: string[]
+  raw?: Record<string, string>
+}
+
+/** 导入成绩 / 答题记录的结果 */
+export interface LearningImportResult {
+  filename: string
+  total_rows: number
+  imported: number
+  failed: number
+  errors: ImportIssueRow[]
+  errors_truncated: boolean
+}
+
 export const learningAnalysisApi = {
   async overview(courseId?: number): Promise<Overview> {
     const res = await api.get('/learning-analysis/overview', {
@@ -221,5 +237,33 @@ export const learningAnalysisApi = {
       responseType: 'blob',
     })
     return res as unknown as Blob
+  },
+
+  /** 导入成绩 / 答题记录（csv / xlsx），失败行逐行返回原因 */
+  async importRecords(file: File): Promise<LearningImportResult> {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res: any = await api.post('/learning-analysis/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    })
+    return res.data as LearningImportResult
+  },
+
+  /** 下载学情导入模板（浏览器直接下载 CSV） */
+  async downloadImportTemplate(): Promise<void> {
+    const res: any = await api.get('/learning-analysis/import/template', {
+      responseType: 'blob',
+    })
+    const raw: BlobPart = res?.data ?? res
+    const blob = raw instanceof Blob ? raw : new Blob([raw], { type: 'text/csv;charset=utf-8' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = '学情导入模板.csv'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
   },
 }

@@ -4,7 +4,12 @@
       <template #header>
         <div class="card-header">
           <span class="title">📚 课程梳理（理解学科 — 学习内容与要求梳理）</span>
-          <el-tag v-if="record?.outline?.is_sample" type="warning" size="small">离线梳理结果</el-tag>
+          <div class="actions">
+            <el-tag v-if="record?.outline?.is_sample" type="warning" size="small">离线梳理结果</el-tag>
+            <el-button type="primary" plain size="small" :icon="Upload" @click="showImport = true">
+              导入大纲/课表
+            </el-button>
+          </div>
         </div>
       </template>
 
@@ -223,24 +228,65 @@
         </el-table-column>
       </el-table>
     </el-card>
+
+    <!-- 导入课表 / 课程大纲 -->
+    <FileImportDialog
+      v-model="showImport"
+      title="导入课表 / 课程大纲"
+      :steps="IMPORT_STEPS"
+      :field-rows="IMPORT_FIELDS"
+      accept=".csv,.xlsx,.txt,.md,.json"
+      tip="支持 .csv / .xlsx（按模板列）、.txt / .md（章节+条目文本）、.json（本系统导出文件），单文件不超过 5MB"
+      accept-text="csv / xlsx / txt / md / json"
+      template-name="课表大纲导入模板.csv"
+      :download-template="downloadImportTemplate"
+      :submit="doImport"
+      @imported="onImported"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { ArrowDown } from '@element-plus/icons-vue'
+import { ArrowDown, Upload } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import FileImportDialog from '@/components/common/FileImportDialog.vue'
+import type { ImportDialogResult, ImportFieldRow } from '@/components/common/importTypes'
 import {
   COGNITIVE_LEVEL_MAP,
   LINK_TYPE_MAP,
   SOURCE_TYPE_MAP,
   downloadExport,
+  downloadImportTemplate,
   generateOutline,
   getOutline,
+  importOutlineFile,
   listOutlines,
   type CurriculumOutlineData,
   type CurriculumOutlineRecord,
 } from '@/services/curriculum'
+
+const showImport = ref(false)
+
+const IMPORT_STEPS = [
+  '下载模板，按表头填写单元与学习内容；也可直接上传 .txt / .md 章节文本，或用本系统导出的 .json',
+  '上传文件，系统按模板列解析单元、学习内容、要求与课时',
+  '导入后直接生成一条可用的梳理记录，「材料出处」会如实标注为上传文件',
+]
+
+const IMPORT_FIELDS: ImportFieldRow[] = [
+  { field: '课程名称', required: '是', desc: '如「数据结构」；也识别 课程 / course' },
+  { field: '学科', required: '否', desc: '数学 / 物理学 / 化学 / 计算机科学 等，留空按课程名推断' },
+  { field: '学段年级', required: '否', desc: '如「大二」「七年级」「高一」' },
+  { field: '单元', required: '否', desc: '如「线性表」；留空归入「未分单元」' },
+  { field: '学习内容', required: '是', desc: '该单元下的一条学习内容主题' },
+  { field: '内容说明', required: '否', desc: '对这条内容的简要说明' },
+  { field: '要求', required: '否', desc: '课标要求表述，如「掌握线性表的抽象数据类型定义」' },
+  { field: '要求水平', required: '否', desc: '了解 / 理解 / 掌握 / 运用' },
+  { field: '认知水平', required: '否', desc: 'remember / understand / apply / analyze / evaluate / create' },
+  { field: '建议课时', required: '否', desc: '数字，如 2' },
+  { field: '教材出处', required: '否', desc: '如「严蔚敏《数据结构》第2章」' },
+]
 
 const SUBJECTS = [
   { id: 'math', name: '数学' },
@@ -370,6 +416,43 @@ async function onExport(format: 'json' | 'md' | 'docx') {
   } catch (e: any) {
     ElMessage.error(e?.message || '导出失败')
   }
+}
+
+/** 导入文件：解析结果整理成对话框摘要 */
+async function doImport(file: File): Promise<ImportDialogResult> {
+  const res = await importOutlineFile(file)
+  const data = res.outline
+  if (!data) {
+    return {
+      title: res.error_message || '文件解析失败，未生成梳理结果',
+      tone: 'error',
+      payload: res,
+    }
+  }
+  const units = data.units?.length ?? 0
+  const contents = (data.units || []).reduce((sum, u) => sum + (u.contents?.length || 0), 0)
+  return {
+    title: `已生成《${data.course || res.course_query}》的梳理结果`,
+    tone: 'success',
+    summary: [
+      { text: `${units} 个单元`, tone: 'ok' },
+      { text: `${contents} 条学习内容`, tone: 'ok' },
+      { text: `${data.connections?.length ?? 0} 条必要联系`, tone: 'muted' },
+      { text: `已保存到「我的梳理记录」`, tone: 'muted' },
+    ],
+    payload: res,
+  }
+}
+
+/** 导入成功后直接展示这条梳理结果 */
+async function onImported(result: ImportDialogResult): Promise<void> {
+  const res = result.payload as CurriculumOutlineRecord | undefined
+  if (!res?.outline) return
+  record.value = res
+  outline.value = res.outline
+  expandedUnits.value = res.outline.units.map((_, i) => i)
+  if (res.course_query) form.value.course_query = res.course_query
+  await loadHistory()
 }
 
 onMounted(loadHistory)

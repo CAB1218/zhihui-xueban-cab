@@ -10,6 +10,7 @@
         <el-select v-model="courseId" placeholder="选择课程" clearable style="width: 180px" @change="reloadAll">
           <el-option v-for="c in courses" :key="c.id" :label="c.name" :value="c.id" />
         </el-select>
+        <el-button :icon="Upload" plain @click="showImport = true">导入成绩/答题记录</el-button>
         <el-dropdown trigger="click" @command="onExport">
           <el-button type="primary">
             导出报告<el-icon class="el-icon--right"><ArrowDown /></el-icon>
@@ -444,22 +445,61 @@
         <el-empty v-else description="暂无群体分析数据" />
       </el-tab-pane>
     </el-tabs>
+
+    <!-- 导入成绩 / 答题记录 -->
+    <FileImportDialog
+      v-model="showImport"
+      title="导入成绩 / 答题记录"
+      :steps="IMPORT_STEPS"
+      :field-rows="IMPORT_FIELDS"
+      accept=".csv,.xlsx"
+      tip="支持 .csv / .xlsx，单文件不超过 5MB；校验不通过的行不会入库，可按提示修正后重新导入"
+      accept-text="csv / xlsx"
+      template-name="学情导入模板.csv"
+      :download-template="learningAnalysisApi.downloadImportTemplate"
+      :submit="doImport"
+      @imported="onImported"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { ArrowDown, Right } from '@element-plus/icons-vue'
+import { ArrowDown, Right, Upload } from '@element-plus/icons-vue'
+import FileImportDialog from '@/components/common/FileImportDialog.vue'
+import type { ImportDialogResult, ImportFieldRow } from '@/components/common/importTypes'
 import {
   learningAnalysisApi,
   type GroupReport,
   type IndividualReport,
+  type LearningImportResult,
   type Overview,
   type QualityResult,
   type StudentBrief,
 } from '@/services/learningAnalysis'
 import api from '@/services/api'
+
+const IMPORT_STEPS = [
+  '下载模板，按表头填写成绩或答题记录（也可直接用平台导出的成绩表，列名支持常见写法）',
+  '上传 .csv / .xlsx 文件，系统逐行校验学生、课程与字段',
+  '导入成功后，页面上的记录规模、质量检查与个体/群体摘要会自动刷新',
+]
+
+const IMPORT_FIELDS: ImportFieldRow[] = [
+  { field: '学生姓名', required: '否', desc: '教师/管理员导入时用于匹配学生；学生本人导入时忽略，统一记到自己名下' },
+  { field: '课程', required: '否', desc: '课程名称或 ID，如「数据结构」；留空表示不绑定具体课程' },
+  { field: '知识点', required: '是', desc: '如「排序」「图的遍历」，汇总分析按此维度聚合' },
+  { field: '记录类型', required: '否', desc: '测验 / 作业 / 考试 / 练习，默认「练习」' },
+  { field: '对错', required: '否', desc: '对 / 错（也识别 正确/错误、Y/N、1/0），可留空' },
+  { field: '得分 / 满分', required: '否', desc: '数值，如 85 / 100，用于计算得分率' },
+  { field: '耗时(秒)', required: '否', desc: '作答用时，用于学习投入分析' },
+  { field: '题目数', required: '否', desc: '本条记录包含的题目数量' },
+  { field: '记录时间', required: '否', desc: '如 2026-01-08 09:30；留空按导入时间处理' },
+  { field: '来源', required: '否', desc: '如「第一章测验」「课后作业1」，便于追溯' },
+]
+
+const showImport = ref(false)
 
 const loading = ref(false)
 const tab = ref<'individual' | 'group'>('group')
@@ -591,6 +631,58 @@ async function onExport(cmd: string) {
   }
 }
 
+/** 导入：把后端结果整理成对话框要展示的摘要 */
+async function doImport(file: File): Promise<ImportDialogResult> {
+  const res = await learningAnalysisApi.importRecords(file)
+  const summary = [
+    { text: `文件共 ${res.total_rows} 行`, tone: 'muted' as const },
+    { text: `成功 ${res.imported} 条`, tone: (res.imported ? 'ok' : 'bad') as 'ok' | 'bad' },
+  ]
+  if (res.failed) summary.push({ text: `未通过校验 ${res.failed} 行`, tone: 'bad' as const })
+
+  let title: string
+  let tone: ImportDialogResult['tone']
+  if (!res.imported) {
+    title = '没有导入任何记录，请按下方原因修正文件后重试'
+    tone = 'error'
+  } else if (res.failed) {
+    title = `已导入 ${res.imported} 条，${res.failed} 行未通过校验`
+    tone = 'warning'
+  } else {
+    title = `成功导入 ${res.imported} 条记录`
+    tone = 'success'
+  }
+
+  return {
+    title,
+    tone,
+    summary,
+    errors: res.errors,
+    errorsTruncated: res.errors_truncated,
+    payload: res,
+  }
+}
+
+/** 导入成功后刷新整页数据（新增记录会改变质量检查与各类摘要） */
+async function onImported(result: ImportDialogResult): Promise<void> {
+  const payload = result.payload as LearningImportResult | undefined
+  if (!payload?.imported) return
+  loading.value = true
+  try {
+    await loadCourses()
+    students.value = await learningAnalysisApi.students()
+    if (!students.value.some((s) => s.student_id === selectedStudentId.value)) {
+      selectedStudentId.value = students.value[0]?.student_id
+    }
+    await loadOverviewAndQuality()
+    await Promise.all([loadGroup(), loadIndividual()])
+  } catch (e: any) {
+    ElMessage.warning(e?.message || '数据已导入，但页面刷新失败，请手动刷新')
+  } finally {
+    loading.value = false
+  }
+}
+
 onMounted(async () => {
   loading.value = true
   try {
@@ -619,19 +711,23 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-bottom: 14px;
 }
 
 .page-header__left {
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 4px 12px;
 }
 
 .page-header__left h2 {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .page-header__sub {
