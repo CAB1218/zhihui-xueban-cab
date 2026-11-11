@@ -30,6 +30,7 @@ from app.api.v1.curriculum import router as curriculum_router
 from app.api.v1.learning_analysis import router as learning_analysis_router
 from app.api.v1.schedule import router as schedule_router
 from app.api.v1.agent_model_config import router as agent_model_config_router
+from app.api.v1.learning_advice import router as learning_advice_router
 
 # v1 总路由
 api_v1_router = APIRouter()
@@ -66,3 +67,4 @@ api_v1_router.include_router(export_router, prefix="/agents", tags=["对话导�
 api_v1_router.include_router(growth_router, prefix="/growth", tags=["成长档案"])
 api_v1_router.include_router(curriculum_router, prefix="/curriculum", tags=["课程梳理"])
 api_v1_router.include_router(learning_analysis_router, prefix="/learning-analysis", tags=["学情分析"])
+api_v1_router.include_router(learning_advice_router, prefix="/learning-advice", tags=["个性化学习建议"])

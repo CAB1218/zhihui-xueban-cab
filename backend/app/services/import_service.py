@@ -632,3 +632,85 @@ def schedule_template_csv() -> bytes:
         "英语口语,周五,16:00,17:30,外语楼102,Smith,1-16,",
     ]
     return ("\ufeff" + "\n".join(lines) + "\n").encode("utf-8")
+
+
+# ---------------------------------------------------------------------------
+# 任务3：学生名单导入（个性化学习建议用）
+# ---------------------------------------------------------------------------
+
+def parse_student_rows(
+    data: bytes, filename: str
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """解析学生名单（csv / xlsx）
+
+    返回 (合格行, 问题行)。合格行结构：
+        {row_no, name, email, grade, major, school}
+
+    只做「文件内」校验（姓名必填、邮箱格式、文件内邮箱不重复），
+    与数据库的重复判断留给调用方，因为需要查库才知道邮箱是否已存在。
+    """
+    headers, rows = read_table(data, filename)
+    if not headers:
+        raise AppException(code=400, message="表格缺少表头")
+
+    ok: List[Dict[str, Any]] = []
+    bad: List[Dict[str, Any]] = []
+    seen_email: Dict[str, int] = {}
+
+    if len(rows) > MAX_RECORD_ROWS:
+        raise AppException(code=400, message=f"单次最多导入 {MAX_RECORD_ROWS} 行")
+
+    for idx, row in enumerate(rows, start=2):
+        name = _pick(row, "姓名", "学生姓名", "名字", "学生", "name", "student_name").strip()
+        email = _pick(row, "邮箱", "电子邮箱", "邮件", "email", "e-mail").strip().lower()
+        grade = _pick(row, "年级", "班级", "grade", "class").strip()
+        major = _pick(row, "专业", "major").strip()
+        school = _pick(row, "学校", "school").strip()
+
+        reasons: List[str] = []
+        if not name:
+            reasons.append("缺少学生姓名")
+        elif len(name) > 50:
+            reasons.append("姓名超过 50 个字符")
+        if email:
+            if "@" not in email or email.startswith("@") or email.endswith("@"):
+                reasons.append(f"邮箱格式不正确：{email}")
+            elif len(email) > 255:
+                reasons.append("邮箱超过 255 个字符")
+            elif email in seen_email:
+                reasons.append(f"文件内第 {seen_email[email]} 行已使用该邮箱")
+        if grade and len(grade) > 20:
+            reasons.append("年级/班级超过 20 个字符")
+        if major and len(major) > 100:
+            reasons.append("专业超过 100 个字符")
+        if school and len(school) > 100:
+            reasons.append("学校超过 100 个字符")
+
+        if reasons:
+            bad.append({"row": idx, "reasons": reasons, "raw": row})
+            continue
+
+        if email:
+            seen_email[email] = idx
+        ok.append(
+            {
+                "row_no": idx,
+                "name": name,
+                "email": email,
+                "grade": grade or None,
+                "major": major or None,
+                "school": school or None,
+            }
+        )
+
+    return ok, bad
+
+
+def students_template_csv() -> bytes:
+    """学生名单导入模板（CSV，带 BOM）"""
+    lines = [
+        "姓名,邮箱,年级,专业,学校",
+        "陈嘉禾,chenjiahe@student.ai4edu.com,2024级,计算机科学与技术,示例大学",
+        "李思远,,2024级,软件工程,示例大学",
+    ]
+    return ("\ufeff" + "\n".join(lines) + "\n").encode("utf-8")

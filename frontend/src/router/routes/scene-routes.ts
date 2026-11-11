@@ -94,6 +94,17 @@ export const sceneRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        // ========== 个性化学习建议（任务3）==========
+        path: 'advice',
+        name: 'SceneLearningAdvice',
+        component: () => import('@/views/advice/LearningAdviceView.vue'),
+        meta: {
+          title: '个性化学习建议',
+          requiresAuth: true,
+          allowedRoles: ['student', 'teacher', 'admin', 'super_admin'],
+        },
+      },
+      {
         // ========== AI 智能体中心入口 ==========
         path: 'agent',
         name: 'AgentCenter',

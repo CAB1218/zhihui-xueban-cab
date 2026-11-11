@@ -92,6 +92,10 @@ const asyncRoutes: RouteRecordRaw[] = [
     path: '/curriculum',
     redirect: '/scene/classroom/curriculum',
   },
+  {
+    path: '/advice',
+    redirect: '/scene/classroom/advice',
+  },
   ...sceneRoutes,
   ...teacherRoutes,
   ...adminRoutes,

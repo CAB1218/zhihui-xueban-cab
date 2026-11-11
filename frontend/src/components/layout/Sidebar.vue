@@ -102,6 +102,7 @@ const featureMenus = computed(() => [
   { index: `/scene/${currentSceneType.value}/classroom`, icon: 'School', title: '课堂互动' },
   { index: `/scene/${currentSceneType.value}/curriculum`, icon: 'Reading', title: '课程梳理' },
   { index: `/scene/${currentSceneType.value}/analysis`, icon: 'DataAnalysis', title: '学情分析' },
+  { index: `/scene/${currentSceneType.value}/advice`, icon: 'MagicStick', title: '个性化建议' },
   { index: `/scene/${currentSceneType.value}/graphs`, icon: 'Connection', title: '知识图谱' },
   { index: `/scene/${currentSceneType.value}/notes`, icon: 'EditPen', title: '智能笔记' },
   { index: `/scene/${currentSceneType.value}/resources`, icon: 'Folder', title: '资源管理' },
