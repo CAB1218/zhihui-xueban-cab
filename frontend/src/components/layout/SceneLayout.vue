@@ -172,6 +172,9 @@ function collapseSidebar() {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    /* Sidebar 用 position: fixed 脱离文档流，主体必须主动让出宽度，
+       否则内容会钻到侧边栏下面被遮挡 */
+    margin-left: 220px;
     transition: margin-left var(--transition-normal);
 
     &--collapsed {

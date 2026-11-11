@@ -89,7 +89,9 @@ const asyncRoutes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    component: () => import('@/views/scene/DashboardView.vue'),
+    // 独立的 404 页：不能用 DashboardView 兜底，否则会出现
+    // 「标题是页面不存在、内容却是课堂仪表盘」的误导性页面
+    component: () => import('@/views/error/NotFoundView.vue'),
     meta: {
       title: '页面不存在',
     },

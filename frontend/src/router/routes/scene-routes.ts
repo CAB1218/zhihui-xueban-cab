@@ -15,6 +15,15 @@ export const sceneRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
+        // /scene/:sceneType 直接访问时补全到仪表盘，避免空白页
+        path: '',
+        name: 'SceneIndex',
+        redirect: (to) => `/scene/${to.params.sceneType}/dashboard`,
+        meta: {
+          requiresAuth: true,
+        },
+      },
+      {
         path: 'dashboard',
         name: 'SceneDashboard',
         component: () => import('@/views/scene/DashboardView.vue'),
@@ -65,6 +74,8 @@ export const sceneRoutes: RouteRecordRaw[] = [
       {
         // ========== 学情分析（数据质量检查 + 个体/群体摘要）==========
         path: 'analysis',
+        // 兼容直接访问 /analysis（少写场景前缀时不再落到 404）
+        alias: ['/analysis'],
         name: 'SceneLearningAnalysis',
         component: () => import('@/views/analysis/LearningAnalysisView.vue'),
         meta: {
@@ -76,6 +87,7 @@ export const sceneRoutes: RouteRecordRaw[] = [
       {
         // ========== 课程梳理（理解学科-学习内容与要求梳理） ==========
         path: 'curriculum',
+        alias: ['/curriculum'],
         name: 'SceneCurriculum',
         component: () => import('@/views/curriculum/CurriculumOutlineView.vue'),
         meta: {
