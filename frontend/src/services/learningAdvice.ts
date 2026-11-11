@@ -8,6 +8,8 @@ export interface AdviceCourse {
   id: number
   name: string
   subject?: string
+  grade?: string
+  semester?: string
 }
 
 export interface AdviceStudent {
@@ -153,10 +155,47 @@ export interface StudentImportResult {
   default_password?: string | null
 }
 
+export interface CourseImportResult {
+  total: number
+  created: number
+  skipped: number
+  failed: number
+  created_rows: Array<{ row: number; name: string; subject?: string; grade?: string }>
+  skipped_rows: Array<{ row: number; name: string; reason: string }>
+  errors: Array<{ row: number; reasons: string[]; raw?: Record<string, unknown> }>
+  errors_truncated?: boolean
+}
+
 export const learningAdviceApi = {
   async courses(): Promise<AdviceCourse[]> {
     const res: any = await api.get('/learning-advice/courses')
     return (res.data ?? []) as AdviceCourse[]
+  },
+
+  async importCourses(file: File): Promise<CourseImportResult> {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res: any = await api.post('/learning-advice/courses/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    })
+    return res.data as CourseImportResult
+  },
+
+  async downloadCourseTemplate(): Promise<void> {
+    const res: any = await api.get('/learning-advice/courses/import/template', {
+      responseType: 'blob',
+    })
+    const raw: BlobPart = res?.data ?? res
+    const blob = raw instanceof Blob ? raw : new Blob([raw], { type: 'text/csv;charset=utf-8' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = '课程导入模板.csv'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
   },
 
   async students(courseId?: number): Promise<AdviceStudent[]> {

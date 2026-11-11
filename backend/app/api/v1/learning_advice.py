@@ -3,6 +3,8 @@ AI4EDU 个性化学习建议 API（任务3：理解教学 — 个性化学习建
 
 端点（挂载在 /learning-advice 下）：
     GET    /courses                    可选课程列表
+    POST   /courses/import             导入课程（csv / xlsx）
+    GET    /courses/import/template    下载课程导入模板
     GET    /students                   有学情记录的学生（可按课程过滤）
     POST   /generate                   生成一份建议方案并落库
     GET    /plans                      历史方案列表（可按学生过滤）
@@ -87,8 +89,125 @@ async def list_courses(
     ).scalars().all()
     return APIResponse(
         code=0,
-        data=[{"id": c.id, "name": c.name, "subject": c.subject} for c in rows],
+        data=[
+            {
+                "id": c.id,
+                "name": c.name,
+                "subject": c.subject,
+                "grade": c.grade,
+                "semester": c.semester,
+            }
+            for c in rows
+        ],
         message="success",
+    )
+
+
+@router.get("/courses/import/template", summary="下载课程导入模板")
+async def courses_template(current_user: User = Depends(get_current_user)) -> Response:
+    return Response(
+        content=import_service.courses_template_csv(),
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f"attachment; filename*=UTF-8''{_quote('课程导入模板.csv')}"
+        },
+    )
+
+
+@router.post("/courses/import", summary="导入课程（csv / xlsx）")
+async def import_courses(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> APIResponse:
+    """课程名称必填，其余列选填：
+
+    - 学科认不出时按课程名猜，猜不出记为 general；可直接写 math/physics/cs 等代码
+    - 年级留空记为「未设置」，学期留空按当前年月推断
+    - 同租户下同名（或同课程编码）课程会跳过，不覆盖已有课程
+    """
+    filename = file.filename or "courses.csv"
+    if not filename.lower().endswith(_IMPORT_FILE_TYPES):
+        raise AppException(code=400, message="仅支持 .csv / .xlsx 文件")
+    data = await file.read()
+    if not data:
+        raise AppException(code=400, message="文件为空")
+    if len(data) > import_service.MAX_FILE_BYTES:
+        raise AppException(code=400, message="文件超过 5MB 上限")
+
+    rows, errors = import_service.parse_course_rows(data, filename)
+    tenant_id = _tenant(current_user)
+
+    existing = (
+        await db.execute(select(Course.name, Course.code).where(Course.tenant_id == tenant_id))
+    ).all()
+    names = {(n or "").lower() for n, _ in existing}
+    codes = {(c or "").upper() for _, c in existing if c}
+
+    now = datetime.utcnow()
+    default_semester = f"{now.year}-{'spring' if now.month <= 7 else 'fall'}"
+
+    created: List[Dict[str, Any]] = []
+    skipped: List[Dict[str, Any]] = []
+    for item in rows:
+        if item["name"].lower() in names:
+            skipped.append(
+                {
+                    "row": item["row_no"],
+                    "name": item["name"],
+                    "reason": "同名课程已存在，跳过（如需修改请到课程管理编辑）",
+                }
+            )
+            continue
+        if item["code"] and item["code"].upper() in codes:
+            skipped.append(
+                {
+                    "row": item["row_no"],
+                    "name": item["name"],
+                    "reason": f"课程编码 {item['code']} 已被其它课程占用，跳过",
+                }
+            )
+            continue
+
+        db.add(
+            Course(
+                tenant_id=tenant_id,
+                name=item["name"],
+                code=item["code"],
+                subject=item["subject"],
+                grade=item["grade"] or "未设置",
+                semester=item["semester"] or default_semester,
+                description=item["description"] or "通过「课程导入」创建",
+                teacher_id=current_user.id,
+                is_active=True,
+            )
+        )
+        names.add(item["name"].lower())
+        if item["code"]:
+            codes.add(item["code"].upper())
+        created.append(
+            {
+                "row": item["row_no"],
+                "name": item["name"],
+                "subject": item["subject"],
+                "grade": item["grade"] or "未设置",
+            }
+        )
+
+    await db.flush()
+    return APIResponse(
+        code=0,
+        data={
+            "total": len(rows) + len(errors),
+            "created": len(created),
+            "skipped": len(skipped),
+            "failed": len(errors),
+            "created_rows": created,
+            "skipped_rows": skipped,
+            "errors": errors[:50],
+            "errors_truncated": len(errors) > 50,
+        },
+        message=f"导入完成：新增 {len(created)} 门课程，跳过 {len(skipped)} 门，{len(errors)} 行未通过校验",
     )
 
 

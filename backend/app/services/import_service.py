@@ -714,3 +714,120 @@ def students_template_csv() -> bytes:
         "李思远,,2024级,软件工程,示例大学",
     ]
     return ("\ufeff" + "\n".join(lines) + "\n").encode("utf-8")
+
+
+# ---------------------------------------------------------------------------
+# 任务3：课程（开课）导入（个性化学习建议「课程」下拉）
+# ---------------------------------------------------------------------------
+
+# 学科别名 → 内部学科代码（与种子课程保持一致：math/physics/cs/...）
+_SUBJECT_ALIASES = {
+    "math": ("数学", "高等数学", "微积分", "线性代数", "概率", "统计", "math", "mathematics"),
+    "physics": ("物理", "力学", "电磁", "physics"),
+    "chemistry": ("化学", "chemistry"),
+    "biology": ("生物", "biology"),
+    "cs": ("计算机", "数据结构", "算法", "编程", "操作系统", "数据库", "网络", "软件", "cs", "computer"),
+    "chinese": ("语文", "中文", "chinese"),
+    "english": ("英语", "english"),
+    "history": ("历史", "history"),
+    "geography": ("地理", "geography"),
+    "politics": ("政治", "思政", "politics"),
+    "pe": ("体育", "physical education", "pe"),
+    "art": ("艺术", "美术", "音乐", "art"),
+}
+
+_MAX_COURSE_ROWS = 500
+
+
+def guess_subject(*texts: str) -> str:
+    """按课程名/学科列的文本猜学科代码；认不出时返回 general"""
+    blob = " ".join((t or "").lower() for t in texts if t)
+    if not blob:
+        return "general"
+    # 先看显式写出的学科代码
+    for code in _SUBJECT_ALIASES:
+        if re.search(rf"(^|[^a-z]){code}([^a-z]|$)", blob):
+            return code
+    for code, aliases in _SUBJECT_ALIASES.items():
+        if any(a.lower() in blob for a in aliases):
+            return code
+    return "general"
+
+
+def parse_course_rows(
+    data: bytes, filename: str
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """解析课程（开课）名单（csv / xlsx）
+
+    每行产出：{row_no, name, code, subject, subject_text, grade, semester, description}
+    只做文件内校验（课程名称必填、长度、文件内重名），与库内重名的判断交给调用方。
+    """
+    headers, rows = read_table(data, filename)
+    if not headers:
+        raise AppException(code=400, message="表格缺少表头")
+    if not rows:
+        raise AppException(code=400, message="文件中没有数据行")
+    if len(rows) > _MAX_COURSE_ROWS:
+        raise AppException(code=400, message=f"单次最多导入 {_MAX_COURSE_ROWS} 门课程，当前 {len(rows)} 门")
+
+    ok: List[Dict[str, Any]] = []
+    bad: List[Dict[str, Any]] = []
+    seen: Dict[str, int] = {}
+
+    for idx, row in enumerate(rows, start=2):
+        name = _pick(
+            row, "课程名称", "课程", "课程名", "名称", "科目名称",
+            "course", "course_name", "name",
+        ).strip()
+        subject_text = _pick(row, "学科", "科目", "subject", "分类", "category").strip()
+        grade = _pick(row, "年级", "学段年级", "学段", "grade", "grade_level").strip()
+        semester = _pick(row, "学期", "开课学期", "semester", "term").strip()
+        code = _pick(row, "课程编码", "课程代码", "编码", "代码", "code", "course_code").strip()
+        description = _pick(row, "课程描述", "描述", "简介", "说明", "description", "remark").strip()
+
+        reasons: List[str] = []
+        if not name:
+            reasons.append("缺少课程名称（课程名 / 课程名称）")
+        elif len(name) > 200:
+            reasons.append("课程名称超过 200 个字符")
+        elif name.lower() in seen:
+            reasons.append(f"与第 {seen[name.lower()]} 行课程重名")
+        if code and len(code) > 50:
+            reasons.append("课程编码超过 50 个字符")
+        if grade and len(grade) > 20:
+            reasons.append("年级超过 20 个字符")
+        if semester and len(semester) > 20:
+            reasons.append("学期超过 20 个字符")
+        if description and len(description) > 1000:
+            reasons.append("课程描述超过 1000 个字符")
+
+        if reasons:
+            bad.append({"row": idx, "reasons": reasons, "raw": row})
+            continue
+
+        seen[name.lower()] = idx
+        ok.append(
+            {
+                "row_no": idx,
+                "name": name,
+                "code": code or None,
+                "subject": guess_subject(subject_text, name),
+                "subject_text": subject_text or None,
+                "grade": grade or None,
+                "semester": semester or None,
+                "description": description or None,
+            }
+        )
+
+    return ok, bad
+
+
+def courses_template_csv() -> bytes:
+    """课程导入模板（CSV，带 BOM，Excel 直接打开不乱码）"""
+    lines = [
+        "课程名称,学科,年级,学期,课程编码,课程描述",
+        "操作系统,计算机科学,大三,2026-fall,CS301,进程管理、内存管理与文件系统",
+        "概率论与数理统计,数学,大二,2026-fall,MATH203,随机变量、参数估计与假设检验",
+        "大学英语（二）,英语,大一,2026-spring,ENG102,学术阅读与写作",
+    ]
+    return ("\ufeff" + "\n".join(lines) + "\n").encode("utf-8")

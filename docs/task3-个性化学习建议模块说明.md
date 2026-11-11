@@ -115,6 +115,8 @@
 | 方法 | 路径 | 说明 |
 |---|---|---|
 | GET | `/api/v1/learning-advice/courses` | 课程下拉（不依赖 `/teachers/*`，学生也能取） |
+| POST | `/api/v1/learning-advice/courses/import` | 导入课程（csv / xlsx），同名或同编码跳过 |
+| GET | `/api/v1/learning-advice/courses/import/template` | 课程导入模板 |
 | GET | `/api/v1/learning-advice/students` | 学生列表（含记录数、正确率、证据是否充足）；学生身份只返回自己 |
 | POST | `/api/v1/learning-advice/generate` | 生成方案并落库；无记录也返回「补充观察」型方案 |
 | GET | `/api/v1/learning-advice/plans` | 历史方案 |
@@ -124,14 +126,15 @@
 | POST | `/api/v1/learning-advice/students/import` | 导入学生名单（csv / xlsx） |
 | GET | `/api/v1/learning-advice/students/import/template` | 学生名单模板 |
 
-## 6. 学生信息导入
+## 6. 三类导入（课程 / 学生 / 学情）
 
-页面右上角「导入」下拉两个入口：
+页面右上角「导入」下拉三个入口，课程下拉展开时底部也有一条「导入课程（新建课程）」：
 
-1. **学生名单**（本模块新增）：姓名必填，邮箱选填（留空自动生成占位邮箱），可带年级/专业/学校。已有邮箱跳过，坏行不入库并返回行号与原因。默认密码 `student123`。
-2. **学情记录**（复用任务2 的导入）：按「学生姓名」匹配已建号学生，导入后重新生成建议即可用上新数据。
+1. **课程**（本模块新增）：课程名称必填，学科/年级/学期/编码/描述选填。学科可写「计算机科学 / 数学」或直接写 `cs / math`，认不出时按课程名猜；学期留空按当前时间推断；同租户同名或同课程编码的课程跳过，不覆盖已有课程。导入成功后自动选中新课程并刷新学生列表。
+2. **学生名单**（本模块新增）：姓名必填，邮箱选填（留空自动生成占位邮箱），可带年级/专业/学校。已有邮箱跳过，坏行不入库并返回行号与原因。默认密码 `student123`。
+3. **学情记录**（复用任务2 的导入）：按「学生姓名」匹配已建号学生，导入后重新生成建议即可用上新数据。
 
-> 为什么分成两个：建议必须基于学情，但「先有学生」是前提。没有学情也能生成——会转成补充观察型方案，正好覆盖赛题「信息不足」的情形。
+> 为什么分成三类：建议必须基于学情，但「先有学生、先有课程」是前提。没有学情也能生成——会转成补充观察型方案，正好覆盖赛题「信息不足」的情形。
 
 ## 7. 文件清单
 
@@ -140,10 +143,10 @@
 | `backend/app/models/learning_plan.py` | 方案 ORM 模型 |
 | `backend/migrations/versions/i0e1f2a3c4d5_add_learning_plans.py` | 建表迁移 |
 | `backend/app/services/learning_advice_service.py` | 匹配大纲 / 生成条目 / 排序排期 / Markdown 渲染 |
-| `backend/app/services/import_service.py` | 新增 `parse_student_rows`、`students_template_csv` |
-| `backend/app/api/v1/learning_advice.py` | 9 个接口 |
+| `backend/app/services/import_service.py` | 新增 `parse_course_rows`、`courses_template_csv`、`parse_student_rows`、`students_template_csv` |
+| `backend/app/api/v1/learning_advice.py` | 11 个接口 |
 | `frontend/src/services/learningAdvice.ts` | 前端接口封装与类型 |
-| `frontend/src/views/advice/LearningAdviceView.vue` | 页面（条件选择、步骤卡、观察卡、排期、材料清单、历史、两个导入） |
+| `frontend/src/views/advice/LearningAdviceView.vue` | 页面（条件选择、步骤卡、观察卡、排期、材料清单、历史、三个导入） |
 
 ## 8. 实测记录（2026-11-11）
 
@@ -162,4 +165,5 @@
 - 排期无跳号：第 1–4 天步骤、第 5–6 天缓冲、第 7 天复盘
 - 导出 Markdown 约 14 KB，含目标/依据/步骤/观察/排期/教师调整/材料清单 7 节
 - 学生名单导入：2 人成功（1 人自动生成占位邮箱）、1 行「缺少学生姓名」被拒
+- 课程导入：csv 与 xlsx 各测一次；「计算机科学 → cs」「概率论与数理统计 → math」学科猜测正确，学期留空补 `2026-fall`，同文件重名与库内同名（含学生账号导入）都按跳过处理，导入后课程下拉自动选中新课
 - 前端：1440 / 820 双视口无横向溢出，0 JS 错误

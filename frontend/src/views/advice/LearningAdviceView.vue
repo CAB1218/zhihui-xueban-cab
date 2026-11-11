@@ -13,6 +13,7 @@
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
+              <el-dropdown-item command="courses">导入课程（新建课程）</el-dropdown-item>
               <el-dropdown-item command="students">导入学生名单（建号）</el-dropdown-item>
               <el-dropdown-item command="records">导入学情记录（成绩/答题）</el-dropdown-item>
             </el-dropdown-menu>
@@ -28,8 +29,18 @@
     <el-card shadow="never" class="control-card">
       <el-form :inline="true" class="control-form" @submit.prevent>
         <el-form-item label="课程">
-          <el-select v-model="courseId" style="width: 190px" @change="onCourseChange">
-            <el-option v-for="c in courses" :key="c.id" :label="c.name" :value="c.id" />
+          <el-select ref="courseSelectRef" v-model="courseId" style="width: 190px" @change="onCourseChange">
+            <el-option v-for="c in courses" :key="c.id" :label="c.name" :value="c.id">
+              <span class="course-option__name">{{ c.name }}</span>
+              <span v-if="c.grade" class="course-option__meta">{{ c.grade }}</span>
+            </el-option>
+            <template #footer>
+              <div class="course-select__footer">
+                <el-button link type="primary" :icon="Plus" @click="openCourseImport">
+                  导入课程（新建课程）
+                </el-button>
+              </div>
+            </template>
           </el-select>
         </el-form-item>
         <el-form-item label="学生">
@@ -344,6 +355,21 @@
       </el-table>
     </el-card>
 
+    <!-- ============ 导入：课程 ============ -->
+    <FileImportDialog
+      v-model="courseImportVisible"
+      title="导入课程"
+      :steps="COURSE_IMPORT_STEPS"
+      :field-rows="COURSE_IMPORT_FIELDS"
+      accept=".csv,.xlsx"
+      accept-text="csv / xlsx"
+      tip="支持 .csv / .xlsx，单文件不超过 5MB；同名课程会跳过，不会覆盖已有课程"
+      template-name="课程导入模板.csv"
+      :download-template="learningAdviceApi.downloadCourseTemplate"
+      :submit="doImportCourses"
+      @imported="onCoursesImported"
+    />
+
     <!-- ============ 导入：学生名单 ============ -->
     <FileImportDialog
       v-model="studentImportVisible"
@@ -385,13 +411,14 @@
  */
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowDown, Download, MagicStick, Upload } from '@element-plus/icons-vue'
+import { ArrowDown, Download, MagicStick, Plus, Upload } from '@element-plus/icons-vue'
 import FileImportDialog from '@/components/common/FileImportDialog.vue'
 import type { ImportDialogResult, ImportFieldRow, ImportSummaryPart } from '@/components/common/importTypes'
 import {
   learningAdviceApi,
   type AdviceCourse,
   type AdviceStudent,
+  type CourseImportResult,
   type LearningPlan,
   type PlanBrief,
   type StudentImportResult,
@@ -400,6 +427,21 @@ import {
   learningAnalysisApi,
   type LearningImportResult,
 } from '@/services/learningAnalysis'
+
+const COURSE_IMPORT_STEPS = [
+  '下载模板，至少填写「课程名称」一列；学科、年级、学期、编码、描述都可留空',
+  '上传 .csv / .xlsx，系统逐行校验课程名称与长度，同名校验在库里比对',
+  '导入成功后课程出现在「课程」下拉里，选中即可为其生成建议',
+]
+
+const COURSE_IMPORT_FIELDS: ImportFieldRow[] = [
+  { field: '课程名称', required: '是', desc: '如「操作系统」，与已有课程同名会跳过，不会覆盖' },
+  { field: '学科', required: '否', desc: '可写「计算机科学 / 数学 / 物理」，也可直接写 cs / math；留空按课程名猜' },
+  { field: '年级', required: '否', desc: '如「大二」「2024级」，留空记为「未设置」' },
+  { field: '学期', required: '否', desc: '如 2026-fall，留空按当前时间推断' },
+  { field: '课程编码', required: '否', desc: '如 CS301；与已有课程编码重复会跳过' },
+  { field: '课程描述', required: '否', desc: '一句话说明课程内容，便于在大纲/建议里对照' },
+]
 
 const STUDENT_IMPORT_STEPS = [
   '下载模板，至少填写「姓名」一列；邮箱选填，留空会自动生成占位邮箱',
@@ -432,6 +474,7 @@ const RECORD_IMPORT_FIELDS: ImportFieldRow[] = [
 ]
 
 const courses = ref<AdviceCourse[]>([])
+const courseSelectRef = ref<{ blur: () => void }>()
 const students = ref<AdviceStudent[]>([])
 const courseId = ref<number>()
 const studentId = ref<number>()
@@ -443,6 +486,7 @@ const generating = ref(false)
 const plan = ref<LearningPlan | null>(null)
 const history = ref<PlanBrief[]>([])
 
+const courseImportVisible = ref(false)
 const studentImportVisible = ref(false)
 const recordImportVisible = ref(false)
 
@@ -565,8 +609,54 @@ async function removePlan(id: number): Promise<void> {
 }
 
 function onImportCommand(cmd: string): void {
-  if (cmd === 'students') studentImportVisible.value = true
+  if (cmd === 'courses') courseImportVisible.value = true
+  else if (cmd === 'students') studentImportVisible.value = true
   else recordImportVisible.value = true
+}
+
+function openCourseImport(): void {
+  courseSelectRef.value?.blur()
+  courseImportVisible.value = true
+}
+
+async function doImportCourses(file: File): Promise<ImportDialogResult> {
+  const res: CourseImportResult = await learningAdviceApi.importCourses(file)
+  const summary: ImportSummaryPart[] = [
+    { text: `文件共 ${res.total} 行`, tone: 'muted' },
+    { text: `新增 ${res.created} 门课程`, tone: res.created ? 'ok' : 'bad' },
+  ]
+  if (res.skipped) summary.push({ text: `同名校验跳过 ${res.skipped} 门`, tone: 'warn' })
+  if (res.failed) summary.push({ text: `未通过校验 ${res.failed} 行`, tone: 'bad' })
+
+  let title: string
+  let tone: ImportDialogResult['tone']
+  if (!res.created && !res.skipped) {
+    title = '没有导入任何课程，请按下方原因修正后重试'
+    tone = 'error'
+  } else if (res.failed) {
+    title = `新增 ${res.created} 门课程，${res.failed} 行未通过校验`
+    tone = 'warning'
+  } else if (!res.created && res.skipped) {
+    title = `没有新增课程：${res.skipped} 门已存在`
+    tone = 'warning'
+  } else {
+    title = `成功新增 ${res.created} 门课程`
+    tone = 'success'
+  }
+
+  return { title, tone, summary, errors: res.errors, errorsTruncated: res.errors_truncated, payload: res }
+}
+
+async function onCoursesImported(result: ImportDialogResult): Promise<void> {
+  const payload = result.payload as CourseImportResult | undefined
+  if (!payload?.created) return
+  await loadCourses()
+  const first = payload.created_rows[0]?.name
+  const hit = first ? courses.value.find((c) => c.name === first) : undefined
+  if (hit) {
+    courseId.value = hit.id
+    await onCourseChange()
+  }
 }
 
 async function doImportStudents(file: File): Promise<ImportDialogResult> {
@@ -995,6 +1085,26 @@ onMounted(async () => {
 
 .stu-option__name {
   margin-right: 8px;
+}
+
+.course-option__name {
+  margin-right: 8px;
+}
+
+.course-option__meta {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.course-select__footer {
+  border-top: 1px solid var(--el-border-color-lighter);
+  padding: 6px 12px;
+  display: flex;
+  justify-content: flex-end;
+
+  :deep(.el-button) {
+    font-size: 12px;
+  }
 }
 
 .stu-option__meta {
