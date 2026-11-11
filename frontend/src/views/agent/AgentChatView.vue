@@ -123,6 +123,14 @@
           </el-avatar>
           <div class="agent-chat__message-content">
             <div class="agent-chat__message-bubble" v-html="renderMarkdown(msg.content)"></div>
+            <!-- 模型没调通时由本地规则引擎回答，标出来避免误以为大模型已生效 -->
+            <el-tooltip
+              v-if="msg.role === 'assistant' && isOfflineAnswer(msg.model_name)"
+              content="本次没有调用大模型（Key 未配置、余额不足或网络异常），回答由本地规则引擎生成。可到「模型配置」点「测试连接」查看具体原因。"
+              placement="top"
+            >
+              <el-tag size="small" type="info" class="agent-chat__offline-tag">离线回答 · 未调用大模型</el-tag>
+            </el-tooltip>
             <!-- 引用来源展示 -->
             <CitationList
               v-if="msg.role === 'assistant' && getMessageCitations(msg)"
@@ -263,6 +271,11 @@ const modelTooltip = computed<string>(() => {
 function getMessageCitations(msg: any): Citation[] | null {
   if (!msg?.metadata?.citations) return null
   return msg.metadata.citations as Citation[]
+}
+
+/** 是否为本地规则引擎生成的回答（大模型没调通时的降级产物） */
+function isOfflineAnswer(modelName?: string): boolean {
+  return modelName === 'demo-rule-engine' || modelName === 'quota-exceeded'
 }
 
 /** 发送消息 */
@@ -645,6 +658,12 @@ onMounted(async () => {
   &__message-time {
     font-size: 11px;
     color: #bbb;
+  }
+
+  &__offline-tag {
+    margin-top: 4px;
+    align-self: flex-start;
+    width: fit-content;
   }
 
   &__cursor {
