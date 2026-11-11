@@ -35,7 +35,7 @@ import { useRouter } from 'vue-router'
 import { Link, Right } from '@element-plus/icons-vue'
 import type { Citation } from '@/services/agent'
 
-const props = defineProps<{
+defineProps<{
   citations: Citation[]
 }>()
 

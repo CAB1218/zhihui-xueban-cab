@@ -150,11 +150,9 @@
  * AI4Edu 学习诊断页
  * 诊断类型选择 + 答题界面 + 诊断报告（雷达图+得分+建议）
  */
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { DataAnalysis, Reading, EditPen } from '@element-plus/icons-vue'
-import api from '@/services/api'
 
 const router = useRouter()
 

@@ -113,7 +113,7 @@
  */
 import { ref, reactive, nextTick, onMounted } from 'vue'
 import { Promotion, Sunny } from '@element-plus/icons-vue'
-import { getBuddyProfile, chatWithBuddy, encourageBuddy, getBuddyMood } from '@/services/buddy'
+import { getBuddyProfile, chatWithBuddy, getBuddyMood } from '@/services/buddy'
 import { ElMessage } from 'element-plus'
 
 const inputMessage = ref<string>('')
@@ -209,11 +209,12 @@ function sendQuickReply(reply: string): void {
 async function selectMood(emoji: string): Promise<void> {
   selectedMood.value = emoji
   try {
-    const result = await getBuddyMood()
+    // 记录心情；回复文案由前端按心情生成，后端返回的 BuddyMoodResult 不含 message 字段
+    await getBuddyMood()
     messages.push({
       id: `mood_${Date.now()}`,
       role: 'buddy',
-      content: result.message || getMoodResponse(emoji),
+      content: getMoodResponse(emoji),
     })
   } catch {
     messages.push({

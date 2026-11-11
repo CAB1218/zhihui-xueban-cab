@@ -85,7 +85,7 @@ import {
 } from '@element-plus/icons-vue'
 import type { TimelineItem } from '@/services/growth'
 
-const props = defineProps<{
+defineProps<{
   items: TimelineItem[]
   loading: boolean
   hasMore: boolean

@@ -29,9 +29,27 @@ export interface KnowledgeNode {
   [key: string]: unknown
 }
 
+/**
+ * 力导图通用节点类型（ForceGraph 组件与各个图谱视图的公共契约）
+ * d3 运行时会把 x/y 坐标注入节点对象
+ */
+export interface GraphNode {
+  id: string
+  name?: string
+  subject?: string
+  subject_id?: string
+  node_type?: 'subject' | 'knowledge'
+  color?: string
+  description?: string | null
+  has_misconception?: boolean
+  x?: number
+  y?: number
+}
+
 export interface GraphLink {
-  source: string
-  target: string
+  /** d3 力导运行后，source/target 会被替换为节点对象，因此是联合类型 */
+  source: string | GraphNode
+  target: string | GraphNode
   type: string
   label: string
   strength?: number
@@ -117,7 +135,12 @@ export interface CrossSubjectStats {
   cross_links: number
   avg_strength: number
   subject_distribution: Record<string, number>
-  top_cross_pairs?: Array<Record<string, unknown>>
+  top_cross_pairs?: Array<{
+    source: string
+    target: string
+    strength: number
+    strength_label: '强' | '中' | '弱'
+  }>
 }
 
 export interface CrossSubjectResponse {

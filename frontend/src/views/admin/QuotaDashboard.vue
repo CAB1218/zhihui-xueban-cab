@@ -138,7 +138,7 @@
                 :color="usageColor(row.daily_used_tokens, row.daily_token_limit)"
                 :stroke-width="12"
                 :text-inside="true"
-                :format="(p: number) => `${formatTokens(row.daily_used_tokens)}`"
+                :format="(_p: number) => `${formatTokens(row.daily_used_tokens)}`"
               />
             </div>
           </template>
@@ -151,7 +151,7 @@
                 :color="usageColor(row.monthly_used_tokens, row.monthly_token_limit)"
                 :stroke-width="12"
                 :text-inside="true"
-                :format="(p: number) => `${formatTokens(row.monthly_used_tokens)}`"
+                :format="(_p: number) => `${formatTokens(row.monthly_used_tokens)}`"
               />
             </div>
           </template>

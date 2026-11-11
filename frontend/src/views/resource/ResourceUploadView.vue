@@ -99,7 +99,7 @@ function goBack(): void {
   router.back()
 }
 
-function handleFileChange(file: UploadFile, files: UploadUserFile[]): void {
+function handleFileChange(_file: UploadFile, files: UploadUserFile[]): void {
   fileList.value = files
 }
 

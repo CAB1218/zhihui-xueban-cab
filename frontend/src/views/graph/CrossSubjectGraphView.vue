@@ -167,7 +167,7 @@ import { useGraphStore } from '@/stores/graph'
 import ForceGraph from '@/components/graph/ForceGraph.vue'
 import LinkInfo from '@/components/graph/LinkInfo.vue'
 import CrossSubjectLegend from '@/components/graph/CrossSubjectLegend.vue'
-import type { CrossSubjectNode, CrossSubjectLink, CrossSubjectStats, GraphLink } from '@/services/graph'
+import type { CrossSubjectNode, CrossSubjectLink, CrossSubjectStats, GraphNode, GraphLink } from '@/services/graph'
 
 const router = useRouter()
 const graphStore = useGraphStore()
@@ -243,7 +243,7 @@ async function buildGraph(): Promise<void> {
   await graphStore.loadCrossSubject(selectedSubjects.value, minStrength.value, maxNodes.value)
 }
 
-function onNodeClick(node: CrossSubjectNode): void {
+function onNodeClick(node: GraphNode): void {
   if (node.node_type === 'subject') {
     router.push({
       name: 'GraphDetail',
@@ -258,7 +258,7 @@ function onNodeClick(node: CrossSubjectNode): void {
   })
 }
 
-function onLinkClick(link: CrossSubjectLink): void {
+function onLinkClick(link: GraphLink): void {
   selectedLink.value = {
     source: link.source,
     target: link.target,

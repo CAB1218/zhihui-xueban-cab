@@ -95,11 +95,10 @@
  * AI4Edu 对话导出对话框
  * 支持 Markdown / PDF 格式导出，展示导出历史和下载链接
  */
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { Document, Files, Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useAgentStore } from '@/stores/agent'
-import type { ExportRecord } from '@/services/agent'
 
 const props = defineProps<{
   modelValue: boolean

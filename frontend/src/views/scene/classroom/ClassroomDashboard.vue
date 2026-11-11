@@ -34,7 +34,7 @@
  * 组合：场景横幅 + 统计卡 + 当前课程卡 + 今日课表 + 课后复习 + 工具栏
  * 使用 dayjs 判断课程状态（进行中/已结束/未开始）
  */
-import { computed, inject, type Ref } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSceneStore } from '@/stores/scene'
 import { SCENE_CONFIG } from '@/utils/constants'
@@ -54,15 +54,6 @@ const sceneStore = useSceneStore()
 
 /** 场景配置（从 SCENE_CONFIG 获取） */
 const sceneConfig = computed(() => SCENE_CONFIG[sceneStore.currentSceneType])
-
-/** 从 DashboardView 注入的后端统计数据 */
-const dashboardStats = inject<Ref<{
-  course_count: number
-  note_count: number
-  resource_count: number
-  ai_chat_count: number
-  study_hours: string
-}>>('dashboardStats')
 
 /**
  * 根据当前时间计算课程状态

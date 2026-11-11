@@ -124,7 +124,7 @@
  * AI4Edu 数据治理页
  * 数据分类列表 + 敏感数据扫描结果 + 合规状态仪表盘
  */
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import api from '@/services/api'

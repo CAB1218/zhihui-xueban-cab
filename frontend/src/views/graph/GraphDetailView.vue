@@ -302,7 +302,7 @@ import NodeCard from '@/components/graph/NodeCard.vue'
 import LinkInfo from '@/components/graph/LinkInfo.vue'
 import MisconceptionDialog from '@/components/graph/MisconceptionDialog.vue'
 import GraphEditDrawer from '@/components/graph/GraphEditDrawer.vue'
-import type { KnowledgeNode, GraphLink, MisconceptionInput } from '@/services/graph'
+import type { KnowledgeNode, GraphNode, GraphLink, MisconceptionInput } from '@/services/graph'
 
 const route = useRoute()
 const router = useRouter()
@@ -459,7 +459,7 @@ async function searchNodes(): Promise<void> {
   await graphStore.searchNodes(nodeQuery.value, id.value)
 }
 
-async function selectNode(node: KnowledgeNode): Promise<void> {
+async function selectNode(node: GraphNode): Promise<void> {
   if (selectedNodeId.value === node.id) {
     clearNodeSelection()
     return
@@ -485,7 +485,7 @@ function clearNodeSelection(): void {
   selectedLink.value = null
 }
 
-async function handleGraphNodeClick(node: KnowledgeNode): Promise<void> {
+async function handleGraphNodeClick(node: GraphNode): Promise<void> {
   if (node.node_type === 'subject') return
   await selectNode(node)
 }
@@ -522,7 +522,7 @@ async function loadRecommendations(nodeId: string): Promise<void> {
   }
 }
 
-function handleNodeHover(node: KnowledgeNode | null): void {
+function handleNodeHover(node: GraphNode | null): void {
   if (!node) {
     selectedLink.value = null
   }
@@ -602,7 +602,7 @@ async function renderCognitiveRadar(nodeId: string): Promise<void> {
     const data = graphStore.cognitiveGoal
     if (!data || !radarRef.value) return
 
-    const echarts = (await import('echarts')).default
+    const echarts = await import('echarts')
     const chart = echarts.init(radarRef.value)
 
     const seriesData: Array<{ value: number[]; name: string; areaStyle?: { opacity: number } }> = [

@@ -21,15 +21,16 @@ export interface WebVitalMetric {
 
 /**
  * 初始化 Web Vitals 监控
- * 使用 web-vitals 库收集 LCP/FID/CLS/FCP/TTFB/INP
+ * web-vitals v5：onFID 已被 INP 取代；各回调使用库自带的 Metric 类型
  */
 export async function initWebVitals(): Promise<void> {
   if (!ENABLED) return
 
   try {
-    const { onLCP, onFID, onCLS, onFCP, onTTFB, onINP } = await import('web-vitals')
+    const { onLCP, onCLS, onFCP, onTTFB, onINP } = await import('web-vitals')
+    type WebVitalLibMetric = import('web-vitals').Metric
 
-    const reportMetric = (metric: WebVitalMetric): void => {
+    const reportMetric = (metric: WebVitalLibMetric): void => {
       reportToBackend('web_vital', {
         name: metric.name,
         value: Math.round(metric.value),
@@ -40,7 +41,6 @@ export async function initWebVitals(): Promise<void> {
     }
 
     onLCP(reportMetric)
-    onFID(reportMetric)
     onCLS(reportMetric)
     onFCP(reportMetric)
     onTTFB(reportMetric)
@@ -106,7 +106,7 @@ export function initErrorTracking(): void {
 /**
  * 手动上报 Vue 组件错误
  */
-export function reportVueError(err: Error, vm: any, info: string): void {
+export function reportVueError(err: Error, _vm: any, info: string): void {
   const errorEvent: ErrorEvent = {
     type: 'vue_error',
     message: err.message,

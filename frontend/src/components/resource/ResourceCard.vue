@@ -24,7 +24,6 @@
  * AI4Edu 资源卡片组件
  */
 import { computed } from 'vue'
-import { Document, Picture, Headset, Film } from '@element-plus/icons-vue'
 import type { ResourceItem } from '@/services/resource'
 
 const props = defineProps<{

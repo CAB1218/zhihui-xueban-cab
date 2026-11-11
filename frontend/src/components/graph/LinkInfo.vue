@@ -5,8 +5,8 @@
       <span>关系详情</span>
     </div>
     <el-descriptions :column="1" border size="small">
-      <el-descriptions-item label="起始节点">{{ link.source }}</el-descriptions-item>
-      <el-descriptions-item label="目标节点">{{ link.target }}</el-descriptions-item>
+      <el-descriptions-item label="起始节点">{{ displayRef(link.source) }}</el-descriptions-item>
+      <el-descriptions-item label="目标节点">{{ displayRef(link.target) }}</el-descriptions-item>
       <el-descriptions-item label="关系类型">
         <el-tag size="small">{{ link.type }}</el-tag>
       </el-descriptions-item>
@@ -45,20 +45,16 @@
  */
 import { computed } from 'vue'
 import { Connection } from '@element-plus/icons-vue'
-
-interface GraphLink {
-  source: string
-  target: string
-  type: string
-  label?: string
-  strength?: number
-  strength_label?: '强' | '中' | '弱'
-  is_cross?: boolean
-}
+import type { GraphNode, GraphLink } from '@/services/graph'
 
 const props = defineProps<{
   link: GraphLink
 }>()
+
+/** d3 力导运行后 source/target 可能已被替换为节点对象，统一取可显示的名称 */
+function displayRef(ref: string | GraphNode): string {
+  return typeof ref === 'string' ? ref : ref.name || ref.id
+}
 
 const strengthColor = computed(() => {
   if (!props.link.strength) return '#909399'

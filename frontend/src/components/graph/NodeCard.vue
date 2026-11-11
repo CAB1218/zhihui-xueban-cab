@@ -28,6 +28,7 @@
  */
 import { computed } from 'vue'
 import MisconceptionBadge from './MisconceptionBadge.vue'
+import type { Misconception } from '@/services/graph'
 
 interface KnowledgeNode {
   id: string
@@ -35,17 +36,7 @@ interface KnowledgeNode {
   subject?: string
   description?: string
   has_misconception?: boolean
-  misconceptions?: Array<{
-    mc_id: string
-    misconception: string
-    correction: string
-    topic: string
-    keywords: string[]
-    source: string
-    annotated_by: number | null
-    annotated_at: string
-    confidence: number
-  }>
+  misconceptions?: Misconception[]
   [key: string]: unknown
 }
 

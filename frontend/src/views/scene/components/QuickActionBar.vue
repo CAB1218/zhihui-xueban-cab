@@ -40,7 +40,7 @@ interface Emits {
   (e: 'action', action: QuickAction): void
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   title: '快捷工具',
 })
 

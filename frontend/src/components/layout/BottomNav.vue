@@ -17,7 +17,7 @@
  * AI4Edu 底部导航（移动端）
  */
 import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 /** 底部导航项 */
@@ -28,7 +28,6 @@ interface NavItem {
 }
 
 const route = useRoute()
-const router = useRouter()
 const authStore = useAuthStore()
 
 /** 当前场景类型 */

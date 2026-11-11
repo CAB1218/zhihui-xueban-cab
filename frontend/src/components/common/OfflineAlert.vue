@@ -45,7 +45,7 @@
  * 网络恢复时短暂显示成功提示
  */
 import { ref, onMounted, onUnmounted } from 'vue'
-import { WarningFilled, SuccessFilled, Loading } from '@element-plus/icons-vue'
+import { SuccessFilled } from '@element-plus/icons-vue'
 import { useNetworkStatus } from '@/composables/useNetworkStatus'
 import { getPendingCount, processQueue } from '@/utils/offlineQueue'
 

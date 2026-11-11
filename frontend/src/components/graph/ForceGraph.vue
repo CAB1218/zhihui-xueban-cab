@@ -134,30 +134,7 @@
  */
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import { ZoomIn, ZoomOut, FullScreen } from '@element-plus/icons-vue'
-
-interface GraphNode {
-  id: string
-  name?: string
-  subject?: string
-  subject_id?: string
-  node_type?: 'subject' | 'knowledge'
-  color?: string
-  description?: string
-  has_misconception?: boolean
-  x?: number
-  y?: number
-  [key: string]: unknown
-}
-
-interface GraphLink {
-  source: string | GraphNode
-  target: string | GraphNode
-  type?: string
-  label?: string
-  is_cross?: boolean
-  strength?: number
-  strength_label?: string
-}
+import type { GraphNode, GraphLink } from '@/services/graph'
 
 const props = withDefaults(defineProps<{
   nodes: GraphNode[]
@@ -276,7 +253,7 @@ function getNodeStrokeWidth(node: GraphNode): number {
   return 2
 }
 
-function getLinkStroke(link: GraphLink, idx: number): string {
+function getLinkStroke(link: GraphLink, _idx: number): string {
   if (link.type === 'HAS_KNOWLEDGE') {
     const sourceNode = findNode(link.source)
     return sourceNode ? getNodeColor(sourceNode) : '#5B8FF9'

@@ -198,7 +198,7 @@ import { useAgentStore } from '@/stores/agent'
 import CitationList from './components/CitationList.vue'
 import ContextBadges from './components/ContextBadges.vue'
 import ExportDialog from '@/components/agent/ExportDialog.vue'
-import type { Citation, ContextSummary } from '@/services/agent'
+import type { Citation } from '@/services/agent'
 
 const agentStore = useAgentStore()
 const route = useRoute()
@@ -247,12 +247,6 @@ const modelTooltip = computed<string>(() => {
 function getMessageCitations(msg: any): Citation[] | null {
   if (!msg?.metadata?.citations) return null
   return msg.metadata.citations as Citation[]
-}
-
-/** 从消息 metadata 中提取上下文摘要 */
-function getMessageContextSummary(msg: any): ContextSummary | null {
-  if (!msg?.metadata?.context_summary) return null
-  return msg.metadata.context_summary as ContextSummary
 }
 
 /** 发送消息 */
