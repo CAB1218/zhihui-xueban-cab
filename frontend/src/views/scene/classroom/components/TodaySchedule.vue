@@ -1,8 +1,23 @@
 <template>
   <div class="today-schedule card">
-    <h3 class="today-schedule__title">今日课表</h3>
+    <div class="today-schedule__header">
+      <div class="today-schedule__title-group">
+        <h3 class="today-schedule__title">今日课表</h3>
+        <el-tag v-if="source === 'imported'" size="small" effect="plain" type="success">
+          已导入
+        </el-tag>
+        <el-tag v-else-if="source === 'demo'" size="small" effect="plain" type="info">
+          示例课表
+        </el-tag>
+      </div>
+      <div class="today-schedule__actions">
+        <slot name="actions" />
+      </div>
+    </div>
     <div v-if="courses.length === 0" class="today-schedule__empty">
-      <el-empty description="今日暂无课程" :image-size="60" />
+      <el-empty description="今天没有课，或还没有导入课表" :image-size="60">
+        <slot name="empty-action" />
+      </el-empty>
     </div>
     <div v-else class="today-schedule__timeline classroom-timeline">
       <div
@@ -46,9 +61,13 @@ import type { CourseScheduleItem } from '../../types'
 interface Props {
   /** 今日课程列表 */
   courses: CourseScheduleItem[]
+  /** 数据来源：imported=用户导入；demo=内置示例；empty=无数据 */
+  source?: 'imported' | 'demo' | 'empty'
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  source: 'empty',
+})
 
 /** 状态对应标签文字 */
 function statusLabel(status: CourseStatus): string {
@@ -75,11 +94,33 @@ function statusTagType(status: CourseStatus): 'success' | 'info' | 'warning' {
 .today-schedule {
   min-height: 280px;
 
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  &__title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
   &__title {
     font-size: 16px;
     font-weight: 600;
     color: var(--color-text-primary, #303133);
-    margin: 0 0 16px 0;
+    margin: 0;
   }
 
   &__timeline {

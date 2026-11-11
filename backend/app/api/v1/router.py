@@ -28,6 +28,7 @@ from app.api.v1.export import router as export_router
 from app.api.v1.growth import router as growth_router
 from app.api.v1.curriculum import router as curriculum_router
 from app.api.v1.learning_analysis import router as learning_analysis_router
+from app.api.v1.schedule import router as schedule_router
 
 # v1 总路由
 api_v1_router = APIRouter()
@@ -51,6 +52,7 @@ api_v1_router.include_router(help_router, prefix="/help", tags=["帮助中心"])
 api_v1_router.include_router(governance_router, prefix="/governance", tags=["数据治理"])
 api_v1_router.include_router(telemetry_router, tags=["遥测"])
 api_v1_router.include_router(dashboard_router, tags=["仪表盘"])
+api_v1_router.include_router(schedule_router, tags=["课表"])
 
 # v2 新增路由
 api_v1_router.include_router(classroom_router, prefix="/agents/classroom-records", tags=["课堂记录"])

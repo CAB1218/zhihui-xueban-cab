@@ -5,7 +5,7 @@ AI4EDU 课程梳理 API
 """
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, Query, UploadFile
 from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,6 +17,7 @@ from app.schemas.curriculum import (
     CurriculumOutlineResponse,
     OutlineGenerateRequest,
 )
+from app.services import import_service
 from app.services.curriculum_service import CurriculumService
 
 router = APIRouter()
@@ -125,3 +126,68 @@ async def export_outline(
 
 def _is_admin(user: User) -> bool:
     return getattr(user, "role", "") in {"admin", "super_admin"}
+
+
+# ---------------------------------------------------------------------------
+# 文件导入（学生/教师上传课表、课程大纲）
+# ---------------------------------------------------------------------------
+
+_IMPORT_TEMPLATE_CSV = """课程名称,学科,学段年级,单元,学习内容,内容说明,要求,要求水平,认知水平,建议课时,教材出处
+数据结构,计算机科学,大二,线性表,线性表的定义与基本操作,顺序表与链表的初始化、插入、删除,掌握线性表的抽象数据类型定义,掌握,understand,2,严蔚敏《数据结构》第2章
+数据结构,计算机科学,大二,线性表,顺序表与链表的实现比较,从时间与空间维度比较两种存储结构,能结合场景选择存储结构,运用,analyze,2,严蔚敏《数据结构》第2章
+数据结构,计算机科学,大二,栈与队列,栈的定义与表达式求值,中缀转后缀与求值流程,掌握栈在表达式求值中的应用,掌握,apply,2,严蔚敏《数据结构》第3章
+"""
+
+_IMPORT_FILE_TYPES = (".csv", ".xlsx", ".txt", ".md", ".json")
+
+
+@router.get("/import/template", summary="下载课表/大纲导入模板")
+async def import_template(
+    current_user: User = Depends(get_current_user),
+) -> Response:
+    """CSV 模板（UTF-8 带 BOM，可直接用 Excel 打开编辑）"""
+    from urllib.parse import quote
+
+    return Response(
+        content=_IMPORT_TEMPLATE_CSV.encode("utf-8-sig"),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{quote('课表大纲导入模板.csv', safe='')}"},
+    )
+
+
+@router.post("/import", summary="导入课表 / 课程大纲文件")
+async def import_outline(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> APIResponse[CurriculumOutlineResponse]:
+    """支持 .csv / .xlsx（按模板列整理）、.txt / .md（章节+条目文本）、
+    .json（本系统导出的梳理成果），解析后直接生成一条可用的梳理记录。
+
+    导入成果的「材料出处」会如实标注为上传文件，不冒充联网检索结果。
+    """
+    filename = file.filename or "outline.csv"
+    lower = filename.lower()
+    if not lower.endswith(_IMPORT_FILE_TYPES):
+        raise AppException(code=400, message="仅支持 .csv / .xlsx / .txt / .md / .json 文件")
+    data = await file.read()
+    if len(data) > import_service.MAX_FILE_BYTES:
+        raise AppException(code=400, message="文件超过 5MB 上限")
+    if not data:
+        raise AppException(code=400, message="文件为空")
+
+    if lower.endswith(".json"):
+        skeleton = import_service.parse_curriculum_json(data, filename)
+    elif lower.endswith((".txt", ".md")):
+        skeleton = import_service.parse_curriculum_text(data, filename)
+    else:
+        skeleton = import_service.parse_curriculum_table(data, filename)
+
+    service = CurriculumService(db)
+    record = await service.save_imported_outline(
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id or 0,
+        filename=filename,
+        skeleton=skeleton,
+    )
+    return APIResponse(data=_to_response(record), message="导入成功")

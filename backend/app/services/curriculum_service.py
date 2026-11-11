@@ -202,6 +202,140 @@ class CurriculumService:
         await self.db.refresh(record)
         return record
 
+    # ------------------------------------------------------------------
+    # 文件导入（课表 / 大纲 / 导出过的 JSON）
+    # ------------------------------------------------------------------
+
+    _SUBJECT_NAMES: Dict[str, str] = {
+        "math": "数学",
+        "physics": "物理",
+        "chemistry": "化学",
+        "biology": "生物",
+        "cs": "计算机科学",
+        "chinese": "语文",
+        "english": "英语",
+        "history": "历史",
+        "geography": "地理",
+        "politics": "政治",
+    }
+
+    async def save_imported_outline(
+        self,
+        user_id: int,
+        tenant_id: int,
+        *,
+        filename: str,
+        skeleton: Dict[str, Any],
+    ) -> CurriculumOutline:
+        """把导入文件解析出的骨架存为一条已完成的梳理记录。
+
+        skeleton 来自 import_service 的三种解析器：
+        - 带 "outline" 键：完整的 outline JSON（本系统导出格式），直接校验入库
+        - 否则为 {course, subject_hint, grade_level, textbook_ref, units, skipped_rows}
+        """
+        now = datetime.now(timezone.utc).isoformat()
+
+        if "outline" in skeleton:
+            raw = skeleton["outline"]
+            raw["generated_at"] = raw.get("generated_at") or now
+            raw["model"] = "文件导入"
+            raw["used_web_search"] = False
+            raw["is_sample"] = False
+            outline_data = CurriculumOutlineData.model_validate(raw)
+        else:
+            course = skeleton["course"]
+            subject = self._detect_subject(
+                " ".join(filter(None, [course, skeleton.get("subject_hint", "")])),
+                None,
+            ) or "math"
+            units = skeleton["units"]
+            content_count = sum(len(u.get("contents", [])) for u in units)
+            skipped = skeleton.get("skipped_rows", 0)
+
+            scope = (
+                f"本大纲由上传文件《{filename}》导入生成，共 {len(units)} 个单元、"
+                f"{content_count} 条学习内容。单元与内容来自用户提供的课表/大纲文件；"
+                "「要求表述」与「必要联系」如需按课程标准细化，可再使用「生成课程梳理」流程补全。"
+            )
+            if skipped:
+                scope += f"另有 {skipped} 行因缺少学习内容列而未纳入。"
+
+            sources: List[Dict[str, Any]] = [
+                {
+                    "title": f"上传文件：{filename}",
+                    "url": "",
+                    "source_type": "upload",
+                    "publisher": "用户上传",
+                    "usage": "本大纲的单元与学习内容清单直接来自该文件",
+                }
+            ]
+            if skeleton.get("textbook_ref"):
+                sources.append(
+                    {
+                        "title": f"《{course}》教材（{skeleton['textbook_ref']}）",
+                        "url": "",
+                        "source_type": "textbook",
+                        "publisher": "",
+                        "usage": "文件标注的教材出处",
+                    }
+                )
+
+            outline_data = CurriculumOutlineData.model_validate(
+                {
+                    "course": course,
+                    "subject": subject,
+                    "subject_name": self._SUBJECT_NAMES.get(subject, skeleton.get("subject_hint") or "通用"),
+                    "grade_level": skeleton.get("grade_level") or "",
+                    "scope": scope,
+                    "scope_included": [
+                        f"第{i}单元 {u.get('name', '')}（{len(u.get('contents', []))} 条）"
+                        for i, u in enumerate(units, 1)
+                    ],
+                    "scope_excluded": [],
+                    "units": units,
+                    "connections": [],
+                    "sources": sources,
+                    "generated_at": now,
+                    "model": "文件导入",
+                    "used_web_search": False,
+                    "is_sample": False,
+                }
+            )
+
+        # 保证材料出处中始终标注上传文件本身
+        if not any(s.source_type == "upload" for s in outline_data.sources):
+            outline_data.sources.insert(
+                0,
+                MaterialSource(
+                    title=f"上传文件：{filename}",
+                    url="",
+                    source_type="upload",
+                    publisher="用户上传",
+                    usage="本大纲的单元与学习内容清单直接来自该文件",
+                ),
+            )
+
+        record = CurriculumOutline(
+            tenant_id=tenant_id,
+            user_id=user_id,
+            course_query=outline_data.course,
+            subject=outline_data.subject,
+            grade_level=outline_data.grade_level,
+            scope_hint=f"文件导入：{filename}",
+            title=outline_data.course,
+            outline=outline_data.model_dump_json(),
+            sources_json=json.dumps(
+                [s.model_dump() for s in outline_data.sources], ensure_ascii=False
+            ),
+            model_name="文件导入",
+            used_web_search=False,
+            status="completed",
+        )
+        self.db.add(record)
+        await self.db.commit()
+        await self.db.refresh(record)
+        return record
+
     async def get_outline(self, outline_id: int, user_id: int, is_admin: bool = False) -> CurriculumOutline:
         record = await self.db.get(CurriculumOutline, outline_id)
         if not record:

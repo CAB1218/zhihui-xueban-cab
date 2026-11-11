@@ -14,8 +14,8 @@
       <p class="scene-welcome-banner__description">{{ config.description }}</p>
     </div>
 
-    <!-- 示例数据标签 -->
-    <el-tag type="info" size="small" class="scene-welcome-banner__demo-tag">示例数据</el-tag>
+    <!-- 示例数据标签（接入真实数据后由父组件关掉） -->
+    <el-tag v-if="demo" type="info" size="small" class="scene-welcome-banner__demo-tag">示例数据</el-tag>
   </div>
 </template>
 
@@ -30,9 +30,13 @@ import type { SceneConfigEntry } from '@/utils/constants'
 interface Props {
   /** 场景配置，从 SCENE_CONFIG[currentSceneType] 传入 */
   config: SceneConfigEntry
+  /** 是否展示「示例数据」角标；接入真实数据后可传 false */
+  demo?: boolean
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  demo: true,
+})
 </script>
 
 <style lang="scss" scoped>
