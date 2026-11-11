@@ -74,8 +74,6 @@ export const sceneRoutes: RouteRecordRaw[] = [
       {
         // ========== 学情分析（数据质量检查 + 个体/群体摘要）==========
         path: 'analysis',
-        // 兼容直接访问 /analysis（少写场景前缀时不再落到 404）
-        alias: ['/analysis'],
         name: 'SceneLearningAnalysis',
         component: () => import('@/views/analysis/LearningAnalysisView.vue'),
         meta: {
@@ -87,7 +85,6 @@ export const sceneRoutes: RouteRecordRaw[] = [
       {
         // ========== 课程梳理（理解学科-学习内容与要求梳理） ==========
         path: 'curriculum',
-        alias: ['/curriculum'],
         name: 'SceneCurriculum',
         component: () => import('@/views/curriculum/CurriculumOutlineView.vue'),
         meta: {

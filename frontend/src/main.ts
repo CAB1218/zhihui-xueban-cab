@@ -54,7 +54,26 @@ initTelemetry()
 app.mount('#app')
 
 // ============ PWA Service Worker 注册 ============
-if ('serviceWorker' in navigator) {
+// 只在生产构建中注册：sw.js 会对 JS/CSS 走 CacheFirst（30 天），
+// 在开发环境注册会把 Vite 的模块缓存成旧版本，改完代码页面却仍是旧内容甚至白屏。
+// 开发环境反过来自动注销历史遗留的 SW 并清空缓存，避免浏览器一直卡在旧版本。
+const IS_PROD = import.meta.env.PROD
+
+if (!IS_PROD && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((regs) => {
+    regs.forEach((reg) => {
+      reg.unregister()
+      console.log('[PWA] 开发环境已注销历史 Service Worker')
+    })
+  })
+  if (typeof caches !== 'undefined') {
+    caches.keys().then((keys) => {
+      keys.forEach((key) => caches.delete(key))
+    })
+  }
+}
+
+if (IS_PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', {

@@ -165,4 +165,12 @@ const featureMenus = computed(() => [
     border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
+
+/* 小屏（<=768px）改用底部导航，侧边栏隐藏。
+   侧边栏是 position: fixed，若继续显示会整块压在内容上，把正文遮住。 */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}
 </style>

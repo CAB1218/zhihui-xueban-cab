@@ -3,9 +3,46 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { resolve } from 'path'
 
+/**
+ * 开发环境拦截 /sw.js，返回一个"自毁"的 Service Worker。
+ *
+ * 背景：public/sw.js 是基于 Workbox 的 PWA 缓存，对 JS/CSS 走 CacheFirst（30 天）。
+ * 浏览器在开发环境访问过之后会一直有 SW 接管，导致改了代码页面仍是旧内容甚至白屏。
+ * 这里在 dev 下把 /sw.js 换成一个会清空缓存、注销自身并刷新页面的脚本，
+ * 老浏览器更新一次即可自动恢复（生产构建仍然使用 public/sw.js 原文）。
+ */
+function devKillServiceWorker() {
+  const killSwitch = `
+self.addEventListener('install', () => self.skipWaiting())
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    try {
+      const keys = await caches.keys()
+      await Promise.all(keys.map((key) => caches.delete(key)))
+    } catch (e) {}
+    try { await self.registration.unregister() } catch (e) {}
+    const clients = await self.clients.matchAll({ type: 'window' })
+    clients.forEach((client) => client.navigate(client.url))
+  })())
+})
+`
+  return {
+    name: 'dev-kill-service-worker',
+    apply: 'serve' as const,
+    configureServer(server: any) {
+      server.middlewares.use('/sw.js', (_req: any, res: any) => {
+        res.setHeader('Content-Type', 'application/javascript')
+        res.setHeader('Cache-Control', 'no-store')
+        res.end(killSwitch)
+      })
+    },
+  }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    devKillServiceWorker(),
     vue(),
     VitePWA({
       /** 使用项目自定义的 Service Worker */

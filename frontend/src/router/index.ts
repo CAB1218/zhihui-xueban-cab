@@ -83,6 +83,15 @@ const asyncRoutes: RouteRecordRaw[] = [
     path: '/',
     redirect: '/scene/classroom/dashboard',
   },
+  // 少写场景前缀时的兼容入口（用独立跳转路由，避免 alias 与动态参数冲突报警告）
+  {
+    path: '/analysis',
+    redirect: '/scene/classroom/analysis',
+  },
+  {
+    path: '/curriculum',
+    redirect: '/scene/classroom/curriculum',
+  },
   ...sceneRoutes,
   ...teacherRoutes,
   ...adminRoutes,
