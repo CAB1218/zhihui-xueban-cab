@@ -6,6 +6,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authApi } from '@/services/auth'
 import type { UserInfo, LoginParams, RegisterParams } from '@/services/auth'
+import { syncPreferencesFromServer } from '@/utils/preferences'
 import router from '@/router'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -135,6 +136,8 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const userInfo = await authApi.getCurrentUser()
       user.value = userInfo
+      // 服务端偏好回填到本地（主题、默认场景、侧边栏等），跨设备一致
+      syncPreferencesFromServer(userInfo.preferences)
     } catch (error) {
       console.error('获取用户信息失败:', error)
     }

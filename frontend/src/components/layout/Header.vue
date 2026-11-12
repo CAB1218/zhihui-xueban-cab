@@ -68,13 +68,13 @@ function handleNotifications(): void {
 async function handleUserCommand(command: string): Promise<void> {
   switch (command) {
     case 'profile':
-      router.push('/profile')
+      router.push({ name: 'ProfileSettings' })
       break
     case 'preferences':
-      router.push('/preferences')
+      router.push({ name: 'PreferenceSettings' })
       break
     case 'help':
-      router.push('/help')
+      router.push({ name: 'HelpCenterStandalone' })
       break
     case 'logout':
       await authStore.logout()

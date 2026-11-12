@@ -2,7 +2,7 @@
 AI4Edu 认证 Schema
 """
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -83,4 +83,5 @@ class UserInfoResponse(BaseModel):
     locale: str = Field(..., description="语言偏好")
     onboarding_completed: bool = Field(..., description="是否完成引导")
     tenant_id: Optional[int] = Field(default=None, description="租户ID")
+    preferences: Optional[Dict[str, Any]] = Field(default=None, description="偏好设置（theme/default_scene 等）")
     created_at: datetime = Field(..., description="注册时间")

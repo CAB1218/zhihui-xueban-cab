@@ -6,6 +6,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
@@ -15,6 +16,13 @@ import i18n from './i18n'
 
 // 全局样式
 import './styles/global.scss'
+import './styles/dark.scss'
+
+// 主题：启动时先把 html.dark 挂上，避免深色用户看到一闪而过的白屏
+import { applyTheme, readStoredTheme, watchSystemTheme } from './utils/theme'
+
+applyTheme(readStoredTheme())
+watchSystemTheme(readStoredTheme)
 
 // 遥测系统
 import { initTelemetry, reportVueError } from './utils/telemetry'

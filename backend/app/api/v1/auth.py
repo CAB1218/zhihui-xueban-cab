@@ -2,6 +2,7 @@
 AI4Edu 认证 API
 提供登录、注册、Token刷新、当前用户信息等端点
 """
+import json
 from datetime import datetime
 from typing import Optional
 
@@ -88,8 +89,15 @@ async def get_current_user_info(
     获取当前登录用户信息
 
     - 从JWT Token中解析用户ID
-    - 返回用户完整信息
+    - 返回用户完整信息（含偏好设置，便于「偏好设置」页跨设备回填）
     """
+    prefs = None
+    if current_user.preferences:
+        try:
+            prefs = json.loads(current_user.preferences)
+        except (ValueError, TypeError):
+            prefs = None
+
     return APIResponse(data=UserInfoResponse(
         id=current_user.id,
         email=current_user.email,
@@ -103,6 +111,7 @@ async def get_current_user_info(
         locale=current_user.locale,
         onboarding_completed=current_user.onboarding_completed,
         tenant_id=current_user.tenant_id,
+        preferences=prefs,
         created_at=current_user.created_at,
     ))
 

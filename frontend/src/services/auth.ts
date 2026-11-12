@@ -53,10 +53,15 @@ export interface UserInfo {
   role: string
   grade: string | null
   school: string | null
+  major?: string | null
+  phone?: string | null
+  bio?: string | null
   default_scene: string
   locale: string
   onboarding_completed: boolean
   tenant_id: number | null
+  /** 服务端保存的偏好（theme / default_scene / sidebar_collapsed 等） */
+  preferences?: Record<string, unknown> | null
   created_at: string
 }
 

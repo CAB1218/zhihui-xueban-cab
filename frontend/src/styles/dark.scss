@@ -1,0 +1,58 @@
+/**
+ * 暗色主题
+ * 只覆盖系统级 CSS 变量，让既有组件（用 var(--color-*) 写的）自动跟随；
+ * element-plus 自带的暗色变量由 theme-chalk/dark/css-vars.css 提供。
+ */
+html.dark {
+  --color-text-primary: #e5e7eb;
+  --color-text-regular: #c9ced6;
+  --color-text-secondary: #9aa1ab;
+  --color-text-placeholder: #6b7280;
+
+  --color-bg-primary: #14161a;
+  --color-bg-secondary: #1b1e23;
+  --color-bg-tertiary: #23272d;
+
+  --color-border: #333940;
+  --color-border-light: #262b31;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.6);
+
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-regular);
+
+  // 卡片有硬编码白底的地方统一压暗
+  .card,
+  .el-card {
+    background-color: var(--color-bg-secondary);
+    border-color: var(--color-border-light);
+  }
+
+  .el-card__header {
+    border-bottom-color: var(--color-border-light);
+  }
+
+  // 输入框、下拉等表单控件跟随暗色
+  .el-input__wrapper,
+  .el-textarea__inner,
+  .el-select__wrapper {
+    background-color: var(--color-bg-tertiary);
+    box-shadow: 0 0 0 1px var(--color-border) inset;
+  }
+
+  // 顶部栏
+  .header {
+    background-color: var(--color-bg-secondary);
+  }
+
+  // 滚动条
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.18);
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+}

@@ -8,6 +8,7 @@ import { setupGuards } from './guards'
 import { sceneRoutes } from './routes/scene-routes'
 import { teacherRoutes } from './routes/teacher-routes'
 import { adminRoutes } from './routes/admin-routes'
+import { commonRoutes } from './routes/common-routes'
 
 // 静态路由（无需认证）
 const constantRoutes: RouteRecordRaw[] = [
@@ -81,7 +82,17 @@ const constantRoutes: RouteRecordRaw[] = [
 const asyncRoutes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/scene/classroom/dashboard',
+    // 尊重「偏好设置 → 默认进入的场景」，没有设置时回落到课堂仪表盘
+    redirect: () => {
+      try {
+        const prefs = JSON.parse(localStorage.getItem('user_preferences') || '{}')
+        const scenes = ['classroom', 'self-study', 'exam', 'discussion']
+        const scene = scenes.includes(prefs?.defaultScene) ? prefs.defaultScene : 'classroom'
+        return `/scene/${scene}/dashboard`
+      } catch {
+        return '/scene/classroom/dashboard'
+      }
+    },
   },
   // 少写场景前缀时的兼容入口（用独立跳转路由，避免 alias 与动态参数冲突报警告）
   {
@@ -99,6 +110,7 @@ const asyncRoutes: RouteRecordRaw[] = [
   ...sceneRoutes,
   ...teacherRoutes,
   ...adminRoutes,
+  ...commonRoutes,
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',

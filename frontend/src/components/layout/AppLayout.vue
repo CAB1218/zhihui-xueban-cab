@@ -50,6 +50,8 @@ function collapseSidebar() {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    // 侧边栏是 fixed（220px），主区域必须让出这段宽度，否则内容会被盖住
+    margin-left: 220px;
     transition: margin-left var(--transition-normal);
 
     &--collapsed {
