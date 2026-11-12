@@ -127,7 +127,126 @@ class GraphService:
             "  MERGE (s)-[:HAS_KNOWLEDGE]->(n))",
             {"subjects": SUBJECT_CATEGORIES},
         )
+
+        # 兜底修复：早期数据把 subject 存成中文名（如「物理」），或者按中文名建了
+        # subject_物理 这类重复学科节点，导致按 subject_id=physics 查询时图谱为空。
+        # 这里同时按「中文名」和「知识点 id 前缀」（physics_xxx → physics）重新挂接，
+        # 并把节点的 subject 属性归一化为英文 id。
+        await self._run(
+            "UNWIND $subjects AS subject "
+            "MATCH (n:KnowledgeNode) "
+            "WHERE n.subject = subject.name "
+            "   OR split(coalesce(n.id, ''), '_')[0] = subject.id "
+            "MERGE (s:Subject {id: 'subject_' + subject.id}) "
+            "SET s.subject_id = subject.id, s.name = subject.name, "
+            "s.icon = subject.icon, s.color = subject.color, s.node_type = 'subject' "
+            "MERGE (s)-[:HAS_KNOWLEDGE]->(n) "
+            "SET n.subject = subject.id "
+            "RETURN count(n) AS fixed",
+            {"subjects": SUBJECT_CATEGORIES},
+        )
+
+        # 清理历史遗留的重复学科节点（如 subject_id 为「物理」的 subject_物理）：
+        # 关系已在上面迁移到正确的 subject_physics，这里只删中文 subject_id 的重复项。
+        await self._run(
+            "UNWIND $subjects AS subject "
+            "MATCH (dup:Subject {subject_id: subject.name}) "
+            "WHERE dup.id <> 'subject_' + subject.id "
+            "DETACH DELETE dup",
+            {"subjects": SUBJECT_CATEGORIES},
+        )
+
         self._subject_hierarchy_ready = True
+
+    async def list_subject_nodes(self, subject_id: str) -> List[Dict[str, Any]]:
+        """列出某学科下的知识点（导入去重、前端选择器用）。"""
+        await self.ensure_subject_hierarchy()
+        records = await self._run(
+            "MATCH (:Subject {subject_id: $subject_id})-[:HAS_KNOWLEDGE]->(n:KnowledgeNode) "
+            "RETURN n.id AS id, n.name AS name ORDER BY n.name",
+            {"subject_id": subject_id},
+        )
+        return [{"id": r["id"], "name": r["name"]} for r in records]
+
+    async def import_nodes(
+        self,
+        subject_id: str,
+        items: List[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """批量创建知识点并可选建立前置关系。
+
+        items: [{name, description?, keywords?, prerequisites: [名称...]}]
+        已存在同名节点时跳过，不覆盖已有内容。
+        """
+        existing = await self.list_subject_nodes(subject_id)
+        name_to_id = {(n["name"] or "").strip().lower(): n["id"] for n in existing}
+        subject_meta = next(
+            (s for s in SUBJECT_CATEGORIES if s["id"] == subject_id), None
+        ) or {
+            "id": subject_id,
+            "name": subject_id,
+            "icon": "Reading",
+            "color": "#5B8FF9",
+        }
+
+        created: List[Dict[str, Any]] = []
+        skipped: List[Dict[str, Any]] = []
+        for item in items:
+            name = (item.get("name") or "").strip()
+            key = name.lower()
+            if key in name_to_id:
+                skipped.append({"name": name, "reason": "同名知识点已存在，跳过"})
+                continue
+            node = await self.create_node(
+                {
+                    "id": f"{subject_id}_{uuid.uuid4().hex[:12]}",
+                    "name": name,
+                    "subject": subject_id,
+                    "node_type": "knowledge",
+                    "description": item.get("description") or "",
+                    "keywords": item.get("keywords") or "",
+                    "has_misconception": False,
+                }
+            )
+            node_id = node.get("id") if isinstance(node, dict) else None
+            if not node_id:
+                skipped.append({"name": name, "reason": "写入图谱失败"})
+                continue
+            name_to_id[key] = node_id
+            created.append({"name": name, "id": node_id})
+
+        # 第二遍建前置关系：允许引用本次导入的节点，也允许引用既有节点
+        links: List[Dict[str, Any]] = []
+        for item in items:
+            name = (item.get("name") or "").strip()
+            from_id = name_to_id.get(name.lower())
+            if not from_id:
+                continue
+            for pre_name in item.get("prerequisites") or []:
+                to_id = name_to_id.get((pre_name or "").strip().lower())
+                if not to_id or to_id == from_id:
+                    continue
+                try:
+                    await self.create_relationship(to_id, from_id, "PREREQUISITE", "前置知识")
+                    links.append({"from": pre_name, "to": name, "type": "PREREQUISITE"})
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("建立前置关系失败 %s -> %s: %s", pre_name, name, exc)
+
+        # 学科节点信息兜底（老数据可能缺 icon/color）
+        await self._run(
+            "MERGE (s:Subject {subject_id: $subject_id}) "
+            "SET s.id = coalesce(s.id, 'subject_' + $subject_id), "
+            "s.name = coalesce(s.name, $name), s.icon = coalesce(s.icon, $icon), "
+            "s.color = coalesce(s.color, $color), s.node_type = 'subject'",
+            {
+                "subject_id": subject_id,
+                "name": subject_meta["name"],
+                "icon": subject_meta["icon"],
+                "color": subject_meta["color"],
+            },
+        )
+
+        return {"created": created, "skipped": skipped, "links": links}
 
     async def get_subject_graph(self, subject_id: str) -> Dict[str, Any]:
         """Return a subject node, its knowledge points, and their relationships."""

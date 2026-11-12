@@ -9,6 +9,10 @@
         <span v-if="graphStore.currentGraph" class="graph-detail__selected-node">
           当前知识点：{{ graphStore.currentGraph.name }}
         </span>
+        <el-button v-if="canManageKnowledgeNodes" type="success" plain @click="knowledgeImportVisible = true">
+          <el-icon><Upload /></el-icon>
+          导入知识点
+        </el-button>
         <el-button type="primary" :disabled="!graphStore.currentGraph" @click="openEditor('overview')">
           <el-icon><Edit /></el-icon>
           协作编辑
@@ -29,9 +33,26 @@
     <el-tabs v-model="activeTab" type="border-card">
       <!-- Tab1: 概览 -->
       <el-tab-pane label="概览" name="overview">
+        <el-alert
+          v-if="!canManageKnowledgeNodes"
+          class="graph-detail__readonly"
+          type="info"
+          :closable="false"
+          show-icon
+          title="当前为只读模式"
+          description="知识点的编辑、导入需要教师或管理员权限；如需维护本学科图谱，请联系管理员开通。"
+        />
         <div class="graph-detail__tab-actions">
           <el-button v-if="canManageKnowledgeNodes" type="success" @click="newNodeVisible = true">
             <el-icon><Plus /></el-icon> 新增知识点
+          </el-button>
+          <el-button
+            v-if="canManageKnowledgeNodes"
+            type="success"
+            plain
+            @click="knowledgeImportVisible = true"
+          >
+            <el-icon><Upload /></el-icon> 导入知识点
           </el-button>
           <el-button type="primary" :disabled="!selectedNodeId" @click="openEditor('overview')">
             <el-icon><Edit /></el-icon> 编辑概览
@@ -234,6 +255,21 @@
       />
     </el-card>
 
+    <!-- 知识点导入 -->
+    <FileImportDialog
+      v-model="knowledgeImportVisible"
+      title="导入知识点"
+      :steps="KNOWLEDGE_IMPORT_STEPS"
+      :field-rows="KNOWLEDGE_IMPORT_FIELDS"
+      accept=".csv,.xlsx"
+      accept-text="csv / xlsx"
+      tip="支持 .csv / .xlsx，单文件不超过 5MB；同名知识点会跳过，不会覆盖已有内容"
+      template-name="知识点导入模板.csv"
+      :download-template="downloadKnowledgeTemplate"
+      :submit="doImportKnowledge"
+      @imported="onKnowledgeImported"
+    />
+
     <!-- Misconception 详情弹窗 -->
     <MisconceptionDialog
       v-if="mcDialogVisible"
@@ -293,10 +329,12 @@
 import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, Delete, Edit, Plus } from '@element-plus/icons-vue'
+import { ArrowLeft, Delete, Edit, Plus, Upload } from '@element-plus/icons-vue'
+import FileImportDialog from '@/components/common/FileImportDialog.vue'
+import type { ImportDialogResult, ImportFieldRow, ImportSummaryPart } from '@/components/common/importTypes'
 import { useGraphStore } from '@/stores/graph'
 import { useAuthStore } from '@/stores/auth'
-import { graphApi } from '@/services/graph'
+import { graphApi, type KnowledgeImportResult } from '@/services/graph'
 import ForceGraph from '@/components/graph/ForceGraph.vue'
 import NodeCard from '@/components/graph/NodeCard.vue'
 import LinkInfo from '@/components/graph/LinkInfo.vue'
@@ -324,8 +362,25 @@ const newNodeVisible = ref<boolean>(false)
 const creatingNode = ref<boolean>(false)
 const newNodeForm = reactive({ name: '', description: '' })
 
+/** 知识点批量导入 */
+const knowledgeImportVisible = ref(false)
+
+const KNOWLEDGE_IMPORT_STEPS = [
+  '下载模板，至少填写「知识点名称」一列；描述、前置知识点、关键词都可留空',
+  '前置知识点用分号分隔，可写本表里的其它知识点，也可写学科内已有知识点',
+  '上传 .csv / .xlsx，系统逐行校验，同名知识点会被跳过（不会覆盖已有内容）',
+]
+
+const KNOWLEDGE_IMPORT_FIELDS: ImportFieldRow[] = [
+  { field: '知识点名称', required: '是', desc: '如「牛顿第二定律」，与学科内已有知识点同名会跳过' },
+  { field: '知识点描述', required: '否', desc: '一句话说明这个知识点讲什么，最长 4000 字' },
+  { field: '前置知识点', required: '否', desc: '多个用分号分隔，如「牛顿第一定律;力的概念」；导入后自动建前置关系' },
+  { field: '关键词', required: '否', desc: '多个用分号分隔，便于搜索，如「惯性;力」' },
+]
+
 const canManageKnowledgeNodes = computed(() =>
-  authStore.userRole === 'teacher' || authStore.userRole === 'super_admin'
+  // 原实现只判断 teacher / super_admin，漏了 admin，导致管理员账号也看不到编辑入口
+  authStore.isTeacher
 )
 const isTeacher = canManageKnowledgeNodes
 
@@ -375,6 +430,52 @@ async function createKnowledgeNode(): Promise<void> {
   } finally {
     creatingNode.value = false
   }
+}
+
+async function doImportKnowledge(file: File): Promise<ImportDialogResult> {
+  const res: KnowledgeImportResult = await graphApi.importKnowledgeNodes(id.value, file)
+  const summary: ImportSummaryPart[] = [
+    { text: `文件共 ${res.total} 行`, tone: 'muted' },
+    { text: `新增 ${res.created} 个知识点`, tone: res.created ? 'ok' : 'bad' },
+  ]
+  if (res.skipped) summary.push({ text: `同名跳过 ${res.skipped} 个`, tone: 'warn' })
+  if (res.failed) summary.push({ text: `未通过校验 ${res.failed} 行`, tone: 'bad' })
+  if (res.links) summary.push({ text: `建立前置关系 ${res.links} 条`, tone: 'ok' })
+
+  let title: string
+  let tone: ImportDialogResult['tone']
+  if (!res.created && !res.skipped) {
+    title = '没有导入任何知识点，请按下方原因修正后重试'
+    tone = 'error'
+  } else if (res.failed) {
+    title = `新增 ${res.created} 个知识点，${res.failed} 行未通过校验`
+    tone = 'warning'
+  } else if (!res.created && res.skipped) {
+    title = `没有新增知识点：${res.skipped} 个已存在`
+    tone = 'warning'
+  } else {
+    title = `成功新增 ${res.created} 个知识点`
+    tone = 'success'
+  }
+
+  return { title, tone, summary, errors: res.errors, errorsTruncated: res.errors_truncated, payload: res }
+}
+
+async function downloadKnowledgeTemplate(): Promise<void> {
+  await graphApi.downloadKnowledgeTemplate(id.value)
+}
+
+async function onKnowledgeImported(result: ImportDialogResult): Promise<void> {
+  const payload = result.payload as KnowledgeImportResult | undefined
+  if (!payload?.created) return
+  await Promise.all([
+    graphStore.loadSubjectGraph(id.value),
+    graphStore.loadSquareStats(),
+    graphStore.searchNodes('', id.value),
+  ])
+  const first = payload.created_rows?.[0]?.name
+  const hit = graphStore.subjectGraph.nodes.find((n) => n.name === first)
+  if (hit) await selectNode(hit as GraphNode)
 }
 
 async function deleteSelectedNode(): Promise<void> {
@@ -731,8 +832,13 @@ onMounted(async () => {
 
   &__tab-actions {
     display: flex;
+    gap: 8px;
     justify-content: flex-end;
     margin-bottom: 24px;
+  }
+
+  &__readonly {
+    margin-bottom: 16px;
   }
 
   &__section-header {

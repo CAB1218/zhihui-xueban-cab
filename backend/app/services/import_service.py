@@ -831,3 +831,92 @@ def courses_template_csv() -> bytes:
         "大学英语（二）,英语,大一,2026-spring,ENG102,学术阅读与写作",
     ]
     return ("\ufeff" + "\n".join(lines) + "\n").encode("utf-8")
+
+
+# ========== 知识点（图谱节点）导入 ==========
+
+_MAX_KNOWLEDGE_ROWS = 800
+
+
+def parse_knowledge_rows(
+    data: bytes, filename: str
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """解析知识点导入表（csv / xlsx）
+
+    每行产出：{row_no, name, description, prerequisites: [名称...]}
+    只做文件内校验（名称必填、长度、文件内重名、前置自引用），
+    与库内已有节点重名的判断交给调用方。
+    """
+    headers, rows = read_table(data, filename)
+    if not headers:
+        raise AppException(code=400, message="表格缺少表头")
+    if not rows:
+        raise AppException(code=400, message="文件中没有数据行")
+    if len(rows) > _MAX_KNOWLEDGE_ROWS:
+        raise AppException(
+            code=400,
+            message=f"单次最多导入 {_MAX_KNOWLEDGE_ROWS} 个知识点，当前 {len(rows)} 个",
+        )
+
+    ok: List[Dict[str, Any]] = []
+    bad: List[Dict[str, Any]] = []
+    seen: Dict[str, int] = {}
+
+    for idx, row in enumerate(rows, start=2):
+        name = _pick(
+            row, "知识点名称", "知识点", "名称", "节点名称", "标题",
+            "name", "node", "knowledge", "title",
+        ).strip()
+        description = _pick(
+            row, "知识点描述", "描述", "简介", "说明", "内容", "description", "desc", "summary",
+        ).strip()
+        prereq_text = _pick(
+            row, "前置知识点", "前置知识", "先修知识点", "前置", "prerequisite", "prerequisites",
+        ).strip()
+        keywords = _pick(row, "关键词", "标签", "keywords", "tags").strip()
+
+        reasons: List[str] = []
+        if not name:
+            reasons.append("缺少知识点名称（知识点 / 名称）")
+        elif len(name) > 200:
+            reasons.append("知识点名称超过 200 个字符")
+        elif name.lower() in seen:
+            reasons.append(f"与第 {seen[name.lower()]} 行知识点重名")
+        if description and len(description) > 4000:
+            reasons.append("知识点描述超过 4000 个字符")
+
+        prerequisites = [
+            p.strip()
+            for p in re.split(r"[;；,，、|]", prereq_text)
+            if p.strip()
+        ]
+        if name and name in prerequisites:
+            reasons.append("前置知识点不能是自己")
+
+        if reasons:
+            bad.append({"row": idx, "reasons": reasons, "raw": row})
+            continue
+
+        seen[name.lower()] = idx
+        ok.append(
+            {
+                "row_no": idx,
+                "name": name,
+                "description": description or None,
+                "keywords": keywords or None,
+                "prerequisites": prerequisites,
+            }
+        )
+
+    return ok, bad
+
+
+def knowledge_template_csv() -> bytes:
+    """知识点导入模板（CSV，带 BOM）"""
+    lines = [
+        "知识点名称,知识点描述,前置知识点,关键词",
+        "牛顿第一定律,物体在不受外力时保持静止或匀速直线运动,力的概念,惯性;力",
+        "牛顿第二定律,合外力与加速度成正比 F=ma,牛顿第一定律,加速度;合外力",
+        "动量守恒,系统不受外力时总动量保持不变,牛顿第二定律,动量;碰撞",
+    ]
+    return ("\ufeff" + "\n".join(lines) + "\n").encode("utf-8")

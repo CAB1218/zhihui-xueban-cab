@@ -6,8 +6,10 @@ import json
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
+from urllib.parse import quote as _quote
 
 from app.dependencies import get_current_user, require_role
 from app.database import get_db
@@ -21,7 +23,8 @@ from app.schemas.graph import (
     GraphReviewAction,
     GraphTaskCreate,
 )
-from app.services.graph_service import graph_service
+from app.services.graph_service import graph_service, SUBJECT_CATEGORIES
+from app.services import import_service
 from app.services.resource_service import ResourceService
 from app.agents.anti_misconception_agent import AntiMisconceptionAgent
 
@@ -30,7 +33,9 @@ router = APIRouter()
 # AntiMisconception Agent 实例（用于 AI 辅助标注）
 _anti_mc_agent = AntiMisconceptionAgent()
 
-EDITOR_ROLES = {"teacher", "super_admin"}
+EDITOR_ROLES = {"teacher", "admin", "super_admin"}
+EDITOR_DEPENDENCY = require_role(["teacher", "admin", "super_admin"])
+_KNOWLEDGE_FILE_TYPES = (".csv", ".xlsx")
 
 
 async def _apply_graph_change(
@@ -149,6 +154,69 @@ async def get_subject_graph(
     return APIResponse(data=result)
 
 
+@router.get("/subjects/{subject_id}/nodes/import/template", summary="下载知识点导入模板")
+async def knowledge_import_template(
+    subject_id: str,
+    user: User = Depends(EDITOR_DEPENDENCY),
+) -> Response:
+    """教师/管理员下载知识点导入模板（CSV，带 BOM）。"""
+    return Response(
+        content=import_service.knowledge_template_csv(),
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f"attachment; filename*=UTF-8''{_quote('知识点导入模板.csv')}"
+        },
+    )
+
+
+@router.post("/subjects/{subject_id}/nodes/import", summary="导入知识点（csv / xlsx）")
+async def import_knowledge_nodes(
+    subject_id: str,
+    file: UploadFile = File(...),
+    user: User = Depends(EDITOR_DEPENDENCY),
+) -> APIResponse:
+    """批量导入知识点。
+
+    列：知识点名称（必填）、知识点描述、前置知识点（多个用分号分隔）、关键词。
+    同名知识点会跳过；前置知识点可引用本次导入的行，也可以引用学科内已有节点。
+    """
+    if subject_id not in {s["id"] for s in SUBJECT_CATEGORIES}:
+        raise HTTPException(status_code=400, detail="未知学科")
+
+    filename = file.filename or "knowledge.csv"
+    if not filename.lower().endswith(_KNOWLEDGE_FILE_TYPES):
+        raise HTTPException(status_code=400, detail="仅支持 .csv / .xlsx 文件")
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="文件为空")
+    if len(data) > import_service.MAX_FILE_BYTES:
+        raise HTTPException(status_code=400, detail="文件超过 5MB 上限")
+
+    rows, errors = import_service.parse_knowledge_rows(data, filename)
+    result = await graph_service.import_nodes(subject_id, rows)
+    created = result["created"]
+    skipped = result["skipped"]
+
+    return APIResponse(
+        data={
+            "total": len(rows) + len(errors),
+            "created": len(created),
+            "skipped": len(skipped),
+            "failed": len(errors),
+            "links": len(result["links"]),
+            "created_rows": created,
+            "skipped_rows": skipped,
+            "errors": errors[:50],
+            "errors_truncated": len(errors) > 50,
+            "node_count": len(await graph_service.list_subject_nodes(subject_id)),
+        },
+        message=(
+            f"导入完成：新增 {len(created)} 个知识点，跳过 {len(skipped)} 个，"
+            f"{len(errors)} 行未通过校验"
+        ),
+    )
+
+
 @router.get("/nodes/{node_id}", summary="获取知识点详情")
 async def get_node_detail(
     node_id: str,
@@ -216,7 +284,7 @@ async def create_node(
     cognitive_level: Optional[str] = Query(None, description="认知水平JSON"),
     has_misconception: bool = Query(False, description="是否有误解标注"),
     misconceptions: Optional[str] = Query(None, description="误解标注JSON"),
-    user: User = Depends(require_role(["teacher"])),
+    user: User = Depends(EDITOR_DEPENDENCY),
 ) -> APIResponse:
     """创建新的知识节点（教师或超级管理员）"""
     node_id = id or f"{subject}_{uuid.uuid4().hex[:12]}"
@@ -241,7 +309,7 @@ async def update_node(
     cognitive_level: Optional[str] = Query(None, description="认知水平JSON"),
     has_misconception: Optional[bool] = Query(None, description="是否有误解标注"),
     misconceptions: Optional[str] = Query(None, description="误解标注JSON"),
-    user: User = Depends(require_role(["teacher"])),
+    user: User = Depends(EDITOR_DEPENDENCY),
 ) -> APIResponse:
     """更新知识节点属性（教师+权限）"""
     update_data: dict = {}
@@ -268,7 +336,7 @@ async def update_node(
 @router.delete("/nodes/{node_id}", summary="删除知识节点")
 async def delete_node(
     node_id: str,
-    user: User = Depends(require_role(["teacher"])),
+    user: User = Depends(EDITOR_DEPENDENCY),
 ) -> APIResponse:
     """删除知识节点及其审核申请、图谱任务和所有关系。"""
     deleted = await graph_service.delete_node(node_id)
@@ -283,7 +351,7 @@ async def create_relationship(
     to_id: str,
     rel_type: str = Query("RELATED", description="关系类型"),
     label: Optional[str] = Query(None, description="关系标签"),
-    user: User = Depends(require_role(["teacher"])),
+    user: User = Depends(EDITOR_DEPENDENCY),
 ) -> APIResponse:
     """创建两个知识节点之间的关系（教师+权限）"""
     result = await graph_service.create_relationship(from_id, to_id, rel_type, label)
@@ -297,7 +365,7 @@ async def delete_relationship(
     from_id: str,
     to_id: str,
     rel_type: str = Query("RELATED", description="关系类型"),
-    user: User = Depends(require_role(["teacher"])),
+    user: User = Depends(EDITOR_DEPENDENCY),
 ) -> APIResponse:
     """删除两个知识节点之间的关系（教师+权限）"""
     await graph_service.delete_relationship(from_id, to_id, rel_type)
@@ -373,7 +441,7 @@ async def list_graph_change_requests(
 async def review_graph_change(
     request_id: str,
     body: GraphReviewAction,
-    user: User = Depends(require_role(["teacher"])),
+    user: User = Depends(EDITOR_DEPENDENCY),
     db: AsyncSession = Depends(get_db),
 ) -> APIResponse:
     request = await graph_service.get_change_request(request_id)
@@ -504,7 +572,7 @@ async def get_node_tasks(
 async def create_node_task(
     node_id: str,
     body: GraphTaskCreate,
-    user: User = Depends(require_role(["teacher"])),
+    user: User = Depends(EDITOR_DEPENDENCY),
 ) -> APIResponse:
     task = await graph_service.create_graph_task(
         node_id=node_id,

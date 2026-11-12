@@ -193,6 +193,20 @@ export interface GraphChangeResult {
 
 // ============ API 方法 ============
 
+/** 知识点批量导入结果 */
+export interface KnowledgeImportResult {
+  total: number
+  created: number
+  skipped: number
+  failed: number
+  links: number
+  created_rows: Array<{ name: string; id?: string }>
+  skipped_rows: Array<{ name: string; reason: string }>
+  errors: Array<{ row: number; reasons: string[]; raw?: Record<string, unknown> }>
+  errors_truncated?: boolean
+  node_count: number
+}
+
 export const graphApi = {
   /** 获取图谱广场统计 */
   async getSquareStats(): Promise<SquareStat[]> {
@@ -245,6 +259,34 @@ export const graphApi = {
   /** 删除知识节点及其图谱关系 */
   async deleteNode(nodeId: string): Promise<void> {
     await api.delete(`/graphs/nodes/${nodeId}`)
+  },
+
+  /** 下载知识点导入模板（csv） */
+  async downloadKnowledgeTemplate(subjectId: string): Promise<void> {
+    const response = await api.get(`/graphs/subjects/${subjectId}/nodes/import/template`, {
+      responseType: 'blob',
+    })
+    const raw: BlobPart = (response as any)?.data ?? (response as any)
+    const blob = raw instanceof Blob ? raw : new Blob([raw], { type: 'text/csv;charset=utf-8' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = '知识点导入模板.csv'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
+  },
+
+  /** 批量导入知识点（csv / xlsx） */
+  async importKnowledgeNodes(subjectId: string, file: File): Promise<KnowledgeImportResult> {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post(`/graphs/subjects/${subjectId}/nodes/import`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    })
+    return response.data as KnowledgeImportResult
   },
 
   /** 更新知识节点 */
