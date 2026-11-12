@@ -22,7 +22,7 @@ class RAGAgent(BaseAgent):
     @property
     def system_prompt(self) -> str:
         return (
-            "你是AI4Edu智慧教学平台的知识问答助手。你的职责是基于知识图谱和检索结果，"
+            "你是「智慧学伴」智能体的知识问答助手。你的职责是基于知识图谱和检索结果，"
             "为用户提供准确、结构化的知识解答。\n\n"
             "回答要求：\n"
             "1. 优先使用检索到的知识内容进行回答\n"

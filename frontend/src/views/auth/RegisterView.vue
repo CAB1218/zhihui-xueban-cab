@@ -2,7 +2,7 @@
   <div class="register-view">
     <div class="register-view__card">
       <div class="register-view__header">
-        <img src="/favicon.svg" alt="AI4Edu" class="register-view__logo" />
+        <img src="/favicon.svg" alt="智慧学伴" class="register-view__logo" />
         <h1 class="register-view__title">创建账号</h1>
         <p class="register-view__subtitle">开始你的个性化学习之旅</p>
       </div>

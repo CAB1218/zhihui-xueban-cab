@@ -60,7 +60,7 @@ class BuddyAgent(BaseAgent):
             PERSONALITY_PROMPTS["encouraging"],
         )
         return (
-            f"你是AI4Edu智慧教学平台的学伴角色。\n\n"
+            f"你是「智慧学伴」智能体的学伴角色。\n\n"
             f"{personality_prompt}\n\n"
             "核心职责：\n"
             "1. 陪伴学生完成学习任务，提供情感支持\n"

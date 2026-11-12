@@ -1,5 +1,5 @@
 """
-AI4Edu 帮助中心 API
+智慧学伴帮助中心 API
 提供帮助文章、FAQ、反馈等端点
 """
 from typing import Optional
@@ -24,12 +24,12 @@ HELP_CATEGORIES = [
 ]
 
 HELP_ARTICLES = [
-    {"id": 1, "title": "如何开始使用 AI4Edu", "category": "getting-started", "content": "AI4Edu 是一个智慧教学平台，支持知识图谱浏览、AI助手对话、课堂互动等功能。注册后选择角色即可开始。", "sort_order": 1},
-    {"id": 2, "title": "场景模式有什么区别", "category": "getting-started", "content": "AI4Edu 提供四种场景：课堂模式（教师主导）、自习模式（自主学习）、考试模式（限时答题）、讨论模式（协作交流）。", "sort_order": 2},
+    {"id": 1, "title": "如何开始使用智慧学伴", "category": "getting-started", "content": "智慧学伴是一个智慧教学平台，支持知识图谱浏览、AI助手对话、课堂互动等功能。注册后选择角色即可开始。", "sort_order": 1},
+    {"id": 2, "title": "场景模式有什么区别", "category": "getting-started", "content": "智慧学伴提供四种场景：课堂模式（教师主导）、自习模式（自主学习）、考试模式（限时答题）、讨论模式（协作交流）。", "sort_order": 2},
     {"id": 3, "title": "如何上传资源", "category": "getting-started", "content": "在资源页面点击上传按钮，支持 PDF/Word/PPT 等格式，系统会自动解析内容并建立索引。", "sort_order": 3},
     {"id": 4, "title": "知识图谱如何使用", "category": "graph", "content": "进入知识图谱广场选择学科，点击节点查看详情，可浏览关联关系、认知目标、推荐节点等。", "sort_order": 1},
     {"id": 5, "title": "如何创建知识节点", "category": "graph", "content": "在图谱详情页点击创建节点，填写名称和学科分类，可选填描述和认知水平。", "sort_order": 2},
-    {"id": 6, "title": "AI 助手有哪些类型", "category": "ai", "content": "AI4Edu 提供9类专业智能体：知识问答、作业辅导、测验出题、文件解析、备课、学伴、诊断、课堂管理、心理支持。", "sort_order": 1},
+    {"id": 6, "title": "AI 助手有哪些类型", "category": "ai", "content": "智慧学伴提供9类专业智能体：知识问答、作业辅导、测验出题、文件解析、备课、学伴、诊断、课堂管理、心理支持。", "sort_order": 1},
     {"id": 7, "title": "如何与AI流式对话", "category": "ai", "content": "在AI助手页面创建会话，输入问题后系统会实时流式返回回答，支持追问和多轮对话。", "sort_order": 2},
     {"id": 8, "title": "如何加入课堂", "category": "classroom", "content": "输入教师提供的课堂加入码即可加入，支持举手、投票、弹幕等互动方式。", "sort_order": 1},
     {"id": 9, "title": "课堂投票如何使用", "category": "classroom", "content": "教师在课堂中发起投票，学生实时参与，结果即时统计展示。", "sort_order": 2},
@@ -40,7 +40,7 @@ HELP_ARTICLES = [
 ]
 
 FAQ_ITEMS = [
-    {"id": 1, "question": "AI4Edu 支持哪些学科？", "answer": "目前支持数学、物理、化学、生物、计算机科学、语文、英语、历史、地理、政治、体育、艺术共12个学科。", "category": "getting-started"},
+    {"id": 1, "question": "智慧学伴支持哪些学科？", "answer": "目前支持数学、物理、化学、生物、计算机科学、语文、英语、历史、地理、政治、体育、艺术共12个学科。", "category": "getting-started"},
     {"id": 2, "question": "AI 回答的准确度如何？", "answer": "AI回答基于知识图谱和RAG检索增强生成，准确度较高。建议结合教材和教师指导进行学习。", "category": "ai"},
     {"id": 3, "question": "数据是否安全？", "answer": "所有数据采用多租户隔离存储，敏感数据加密保护，符合数据治理和隐私保护要求。", "category": "account"},
     {"id": 4, "question": "课堂最多支持多少人？", "answer": "默认单课堂最大100人，超过80人时系统自动降级为HTTP轮询模式以保证性能。", "category": "classroom"},

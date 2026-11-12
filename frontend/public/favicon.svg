@@ -6,10 +6,14 @@
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-  <text x="256" y="200" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="120" font-weight="bold">AI</text>
-  <text x="256" y="340" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="72" font-weight="600">4Edu</text>
-  <circle cx="128" cy="420" r="16" fill="#4CAF50" opacity="0.8"/>
-  <circle cx="384" cy="420" r="16" fill="#FF9800" opacity="0.8"/>
+  <text x="256" y="250" text-anchor="middle" fill="white"
+        font-family="'PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif"
+        font-size="196" font-weight="700">智</text>
+  <text x="256" y="364" text-anchor="middle" fill="white"
+        font-family="'PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif"
+        font-size="84" font-weight="500" opacity="0.92">学伴</text>
+  <circle cx="120" cy="432" r="14" fill="#4CAF50" opacity="0.85"/>
+  <circle cx="392" cy="432" r="14" fill="#FF9800" opacity="0.85"/>
   <path d="M80 80 L80 60 Q80 40 100 40 L140 40" stroke="white" stroke-width="4" fill="none" opacity="0.3"/>
   <path d="M432 80 L432 60 Q432 40 412 40 L372 40" stroke="white" stroke-width="4" fill="none" opacity="0.3"/>
 </svg>

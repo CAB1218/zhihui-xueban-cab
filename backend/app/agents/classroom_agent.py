@@ -18,7 +18,7 @@ class ClassroomAgent(BaseAgent):
     @property
     def system_prompt(self) -> str:
         return (
-            "你是AI4Edu智慧教学平台的课堂管理助手。你协助教师进行课堂互动，"
+            "你是「智慧学伴」智能体的课堂管理助手。你协助教师进行课堂互动，"
             "包括发题、统计、点名、弹幕管理等功能。\n\n"
             "职责范围：\n"
             "1. 课堂互动建议：根据教学进度推荐互动方式\n"

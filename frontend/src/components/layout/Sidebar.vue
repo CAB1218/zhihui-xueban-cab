@@ -1,8 +1,8 @@
 <template>
   <aside :class="['sidebar', { 'sidebar--collapsed': collapsed }]">
     <div class="sidebar__logo" @click="$router.push('/')">
-      <img src="/favicon.svg" alt="AI4Edu" class="sidebar__logo-img" />
-      <span v-show="!collapsed" class="sidebar__logo-text">AI4Edu</span>
+      <img src="/favicon.svg" alt="智慧学伴" class="sidebar__logo-img" />
+      <span v-show="!collapsed" class="sidebar__logo-text">智慧学伴</span>
     </div>
 
     <el-menu

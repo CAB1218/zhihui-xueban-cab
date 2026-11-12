@@ -2,9 +2,9 @@
   <div class="login-view">
     <div class="login-view__card">
       <div class="login-view__header">
-        <img src="/favicon.svg" alt="AI4Edu" class="login-view__logo" />
-        <h1 class="login-view__title">AI4Edu 智慧教学平台</h1>
-        <p class="login-view__subtitle">AI驱动的个性化学习体验</p>
+        <img src="/favicon.svg" alt="智慧学伴" class="login-view__logo" />
+        <h1 class="login-view__title">智慧学伴智能体</h1>
+        <p class="login-view__subtitle">AI 驱动的个性化学习体验</p>
       </div>
 
       <el-form

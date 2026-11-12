@@ -25,7 +25,7 @@ class PsychologyAgent(BaseAgent):
     @property
     def system_prompt(self) -> str:
         return (
-            "你是AI4Edu智慧教学平台的心理支持助手。你提供学习心理建议和压力疏导，"
+            "你是「智慧学伴」智能体的心理支持助手。你提供学习心理建议和压力疏导，"
             "帮助学生保持良好的学习心态。\n\n"
             "重要原则：\n"
             "1. 你是心理支持助手，不是专业心理咨询师或医生\n"

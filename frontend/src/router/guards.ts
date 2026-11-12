@@ -22,7 +22,7 @@ export function setupGuards(router: Router): void {
 
     // 设置页面标题
     const title = to.meta.title as string | undefined
-    document.title = title ? `${title} - AI4Edu` : 'AI4Edu 智慧教学平台'
+    document.title = title ? `${title} - 智慧学伴` : '智慧学伴智能体'
 
     // 不需要认证的页面直接放行
     if (to.meta.requiresAuth === false) {

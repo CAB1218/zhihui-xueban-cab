@@ -141,7 +141,7 @@ const offlinePageHTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI4Edu - 离线模式</title>
+  <title>智慧学伴 - 离线模式</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -304,7 +304,7 @@ self.addEventListener('push', (event) => {
   if (!event.data) return
 
   const data = event.data.json()
-  const title = data.title || 'AI4Edu 通知'
+  const title = data.title || '智慧学伴通知'
   const options: NotificationOptions = {
     body: data.body || '',
     icon: '/icons/icon-192x192.png',

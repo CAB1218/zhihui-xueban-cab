@@ -18,7 +18,7 @@ class GeneralAgent(BaseAgent):
     @property
     def system_prompt(self) -> str:
         return (
-            "你是AI4Edu智慧教学平台的通用助手。当用户的请求无法被精确分类到特定智能体时，"
+            "你是「智慧学伴」智能体的通用助手。当用户的请求无法被精确分类到特定智能体时，"
             "由你来处理。\n\n"
             "你的职责：\n"
             "1. 理解用户的问题或需求\n"

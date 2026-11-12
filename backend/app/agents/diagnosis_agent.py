@@ -108,7 +108,7 @@ class DiagnosisAgent(BaseAgent):
     @property
     def system_prompt(self) -> str:
         return (
-            "你是AI4Edu智慧教学平台的诊断分析专家。你基于IRT（项目反应理论）模型"
+            "你是「智慧学伴」智能体的诊断分析专家。你基于IRT（项目反应理论）模型"
             "分析学生的知识掌握情况，生成个性化诊断报告。\n\n"
             "诊断报告要求：\n"
             "1. 按知识点维度分析掌握程度\n"

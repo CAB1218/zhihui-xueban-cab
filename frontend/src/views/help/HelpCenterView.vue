@@ -103,15 +103,15 @@ const categories = ref([
 
 // FAQ数据
 const faqs = ref([
-  { id: '1', category: 'getting-started', question: '如何开始使用AI4Edu？', answer: '注册账号后，系统会引导你完成角色选择和兴趣设置。根据你的角色（学生/教师），平台会自动推荐最适合的学习场景和功能。' },
-  { id: '2', category: 'getting-started', question: '场景模式有什么区别？', answer: 'AI4Edu提供四种场景模式：<br/><strong>课堂模式</strong>：适合跟随课堂节奏学习<br/><strong>自习模式</strong>：适合自主学习和知识探索<br/><strong>考前模式</strong>：适合考试复习和错题练习<br/><strong>讨论模式</strong>：适合小组协作和知识分享' },
+  { id: '1', category: 'getting-started', question: '如何开始使用智慧学伴？', answer: '注册账号后，系统会引导你完成角色选择和兴趣设置。根据你的角色（学生/教师），平台会自动推荐最适合的学习场景和功能。' },
+  { id: '2', category: 'getting-started', question: '场景模式有什么区别？', answer: '智慧学伴提供四种场景模式：<br/><strong>课堂模式</strong>：适合跟随课堂节奏学习<br/><strong>自习模式</strong>：适合自主学习和知识探索<br/><strong>考前模式</strong>：适合考试复习和错题练习<br/><strong>讨论模式</strong>：适合小组协作和知识分享' },
   { id: '3', category: 'knowledge-graph', question: '知识图谱怎么用？', answer: '知识图谱展示了知识点之间的关联关系。你可以点击节点查看知识点详情，通过连线了解前置知识和后续知识。AI会根据你的学习状态推荐最需要关注的节点。' },
   { id: '4', category: 'ai-assistant', question: 'AI助手能做什么？', answer: 'AI助手可以：回答学习问题、讲解知识点、生成练习题、批改作业、制定学习计划等。不同类型的AI助手有不同的专长领域。' },
   { id: '5', category: 'notes', question: 'AI增强笔记是什么？', answer: 'AI增强功能可以帮你：自动生成笔记摘要、提取关键知识点、扩展笔记内容、纠正错误，以及关联知识图谱中的相关节点。' },
   { id: '6', category: 'notes', question: '笔记版本历史如何使用？', answer: '每次保存笔记都会生成一个版本。你可以查看历史版本、对比差异、回退到之前的版本。系统还会自动标记AI增强导致的版本变化。' },
   { id: '7', category: 'diagnosis', question: '学习诊断准确吗？', answer: '学习诊断基于你作答的正确率和响应时间综合评估。诊断题目由AI根据你的学习进度动态生成，覆盖不同难度层级，确保评估结果的准确性。' },
   { id: '8', category: 'classroom', question: '课堂互动如何参与？', answer: '加入课堂后，你可以参与实时投票、举手提问、发送弹幕等互动。教师可以发起随堂测验，系统会实时统计全班答题情况。' },
-  { id: '9', category: 'getting-started', question: '数据安全如何保障？', answer: 'AI4Edu严格遵守数据安全规范，所有个人数据加密存储，AI训练数据经过脱敏处理。你可以随时在设置中管理数据授权和隐私选项。' },
+  { id: '9', category: 'getting-started', question: '数据安全如何保障？', answer: '智慧学伴严格遵守数据安全规范，所有个人数据加密存储，AI训练数据经过脱敏处理。你可以随时在设置中管理数据授权和隐私选项。' },
   { id: '10', category: 'ai-assistant', question: '学伴和AI助手有什么区别？', answer: 'AI助手侧重知识解答和学习辅导，功能更专业；学伴更注重情感陪伴和学习动力，风格更温馨。你可以根据需要选择使用。' },
 ])
 

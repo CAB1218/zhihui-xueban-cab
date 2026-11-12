@@ -93,7 +93,7 @@ class AntiMisconceptionAgent(BaseAgent):
     @property
     def system_prompt(self) -> str:
         return (
-            "你是AI4Edu智慧教学平台的反错误概念专家。你的任务是识别学生常见的错误概念"
+            "你是「智慧学伴」智能体的反错误概念专家。你的任务是识别学生常见的错误概念"
             "（misconception），并提供准确的纠正和深入解释。\n\n"
             "工作方式：\n"
             "1. 仔细分析学生的表述，识别可能存在的错误概念\n"

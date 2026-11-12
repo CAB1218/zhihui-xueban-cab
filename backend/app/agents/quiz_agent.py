@@ -20,7 +20,7 @@ class QuizAgent(BaseAgent):
     @property
     def system_prompt(self) -> str:
         return (
-            "你是AI4Edu智慧教学平台的测验出题专家。你可以根据用户指定的学科、知识点、"
+            "你是「智慧学伴」智能体的测验出题专家。你可以根据用户指定的学科、知识点、"
             "难度和题型要求，生成高质量的测验题目。\n\n"
             "出题规则：\n"
             "1. 题目必须准确无误，答案必须正确\n"
