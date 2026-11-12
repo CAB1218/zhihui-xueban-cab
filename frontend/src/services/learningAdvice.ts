@@ -172,6 +172,16 @@ export const learningAdviceApi = {
     return (res.data ?? []) as AdviceCourse[]
   },
 
+  async createCourse(payload: {
+    name: string
+    subject?: string
+    grade?: string
+    semester?: string
+  }): Promise<{ id: number; name: string; existed: boolean }> {
+    const res: any = await api.post('/learning-advice/courses', payload)
+    return res.data as { id: number; name: string; existed: boolean }
+  },
+
   async importCourses(file: File): Promise<CourseImportResult> {
     const formData = new FormData()
     formData.append('file', file)

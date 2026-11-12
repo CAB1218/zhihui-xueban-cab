@@ -103,6 +103,63 @@ async def list_courses(
     )
 
 
+class CourseCreateRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100, description="课程名称")
+    subject: Optional[str] = Field(None, max_length=50, description="学科，可留空自动推断")
+    grade: Optional[str] = Field(None, max_length=50, description="年级")
+    semester: Optional[str] = Field(None, max_length=50, description="学期")
+
+
+@router.post("/courses", summary="新建单门课程")
+async def create_course(
+    payload: CourseCreateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> APIResponse:
+    """教师在课堂/建议页临时建课用。
+
+    名称必填；同名课程已存在时直接返回已有课程（`existed=True`），不报错，
+    这样前端在「新建课程」后总能拿到一个可用的 course_id。
+    """
+    tenant_id = _tenant(current_user)
+    name = payload.name.strip()
+    if not name:
+        raise AppException(code=400, message="课程名称不能为空")
+
+    existing = (
+        await db.execute(
+            select(Course).where(Course.tenant_id == tenant_id, Course.name == name)
+        )
+    ).scalars().first()
+    if existing:
+        return APIResponse(
+            code=0,
+            data={"id": existing.id, "name": existing.name, "existed": True},
+            message="同名课程已存在，已为你选中",
+        )
+
+    now = datetime.utcnow()
+    default_semester = f"{now.year}-{'spring' if now.month <= 7 else 'fall'}"
+    subject = payload.subject or import_service.guess_subject(name)
+    course = Course(
+        tenant_id=tenant_id,
+        name=name,
+        subject=subject or "general",
+        grade=(payload.grade or "未设置").strip() or "未设置",
+        semester=(payload.semester or "").strip() or default_semester,
+        description="通过「新建课程」创建",
+        teacher_id=current_user.id,
+        is_active=True,
+    )
+    db.add(course)
+    await db.flush()
+    return APIResponse(
+        code=0,
+        data={"id": course.id, "name": course.name, "existed": False},
+        message="课程已创建",
+    )
+
+
 @router.get("/courses/import/template", summary="下载课程导入模板")
 async def courses_template(current_user: User = Depends(get_current_user)) -> Response:
     return Response(

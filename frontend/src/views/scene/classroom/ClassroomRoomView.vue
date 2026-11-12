@@ -19,8 +19,27 @@
                   <el-input v-model="createForm.title" placeholder="如：一元二次方程 第2课时" clearable />
                 </el-form-item>
                 <el-form-item label="所属课程">
-                  <el-select v-model="createForm.course_id" placeholder="选择课程" style="width: 100%">
-                    <el-option v-for="c in courses" :key="c.id" :label="c.name" :value="c.id" />
+                  <el-select
+                    ref="courseSelectRef"
+                    v-model="createForm.course_id"
+                    placeholder="选择课程"
+                    style="width: 100%"
+                    filterable
+                    :loading="courseLoading"
+                  >
+                    <el-option v-for="c in courses" :key="c.id" :label="c.name" :value="c.id">
+                      <span class="course-option__name">{{ c.name }}</span>
+                      <span v-if="c.grade" class="course-option__meta">{{ c.grade }}</span>
+                    </el-option>
+                    <template #empty>
+                      <div class="course-empty">暂无课程，用下方按钮新建或导入</div>
+                    </template>
+                    <template #footer>
+                      <div class="course-select__footer">
+                        <el-button link type="primary" :icon="Plus" @click="openCreateCourse">新建课程</el-button>
+                        <el-button link type="primary" :icon="Upload" @click="openCourseImport">导入课程</el-button>
+                      </div>
+                    </template>
                   </el-select>
                 </el-form-item>
                 <el-form-item>
@@ -65,6 +84,47 @@
           </el-table-column>
         </el-table>
       </el-card>
+
+      <!-- ============ 新建课程（教师建课堂时临时建） ============ -->
+      <el-dialog v-model="createCourseVisible" title="新建课程" width="440px">
+        <el-form label-width="72px" @submit.prevent>
+          <el-form-item label="课程名称" required>
+            <el-input
+              v-model="createCourseForm.name"
+              placeholder="如：操作系统"
+              maxlength="100"
+              clearable
+              @keyup.enter="doCreateCourse"
+            />
+          </el-form-item>
+          <el-form-item label="学科">
+            <el-input v-model="createCourseForm.subject" placeholder="选填，可写 计算机科学 / 数学，留空自动推断" />
+          </el-form-item>
+          <el-form-item label="年级">
+            <el-input v-model="createCourseForm.grade" placeholder="选填，如 大三 / 2024级" />
+          </el-form-item>
+        </el-form>
+        <div class="dialog-tip">建好后会自动选中该课程；同名课程已存在时直接选中已有课程。</div>
+        <template #footer>
+          <el-button @click="createCourseVisible = false">取消</el-button>
+          <el-button type="primary" :loading="creatingCourse" @click="doCreateCourse">创建并选中</el-button>
+        </template>
+      </el-dialog>
+
+      <!-- ============ 导入课程 ============ -->
+      <FileImportDialog
+        v-model="courseImportVisible"
+        title="导入课程"
+        :steps="COURSE_IMPORT_STEPS"
+        :field-rows="COURSE_IMPORT_FIELDS"
+        accept=".csv,.xlsx"
+        accept-text="csv / xlsx"
+        tip="支持 .csv / .xlsx，单文件不超过 5MB；同名课程会跳过，不会覆盖已有课程"
+        template-name="课程导入模板.csv"
+        :download-template="learningAdviceApi.downloadCourseTemplate"
+        :submit="doImportCourses"
+        @imported="onCoursesImported"
+      />
     </template>
 
     <!-- ============ 课堂房间 ============ -->
@@ -188,7 +248,14 @@
  */
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import api from '@/services/api'
+import { Plus, Upload } from '@element-plus/icons-vue'
+import FileImportDialog from '@/components/common/FileImportDialog.vue'
+import type { ImportDialogResult, ImportFieldRow, ImportSummaryPart } from '@/components/common/importTypes'
+import {
+  learningAdviceApi,
+  type AdviceCourse,
+  type CourseImportResult,
+} from '@/services/learningAdvice'
 import { useAuthStore } from '@/stores/auth'
 import {
   classroomApi,
@@ -198,11 +265,6 @@ import {
   type PollResult,
 } from '@/services/classroom'
 
-interface CourseOption {
-  id: number
-  name: string
-}
-
 const loading = ref(false)
 const creating = ref(false)
 const joining = ref(false)
@@ -210,7 +272,9 @@ const pollCreating = ref(false)
 const pollDialog = ref(false)
 
 const classrooms = ref<ClassroomInfo[]>([])
-const courses = ref<CourseOption[]>([])
+const courses = ref<AdviceCourse[]>([])
+const courseLoading = ref(false)
+const courseSelectRef = ref<{ blur: () => void }>()
 const current = ref<ClassroomInfo | null>(null)
 const participants = ref<ClassroomParticipantInfo[]>([])
 const polls = ref<PollItem[]>([])
@@ -220,6 +284,27 @@ const results = reactive<Record<string | number, PollResult['results']>>({})
 const createForm = reactive<{ title: string; course_id?: number }>({ title: '' })
 const joinCode = ref('')
 const pollForm = reactive({ question: '', optionsText: '' })
+
+/** 新建 / 导入课程 */
+const createCourseVisible = ref(false)
+const creatingCourse = ref(false)
+const createCourseForm = reactive({ name: '', subject: '', grade: '' })
+const courseImportVisible = ref(false)
+
+const COURSE_IMPORT_STEPS = [
+  '下载模板，至少填写「课程名称」一列；学科、年级、学期、编码、描述都可留空',
+  '上传 .csv / .xlsx，系统逐行校验课程名称与长度，同名校验在库里比对',
+  '导入成功后课程出现在「所属课程」下拉里，选中即可发起课堂',
+]
+
+const COURSE_IMPORT_FIELDS: ImportFieldRow[] = [
+  { field: '课程名称', required: '是', desc: '如「操作系统」，与已有课程同名会跳过，不会覆盖' },
+  { field: '学科', required: '否', desc: '可写「计算机科学 / 数学 / 物理」，也可直接写 cs / math；留空按课程名猜' },
+  { field: '年级', required: '否', desc: '如「大二」「2024级」，留空记为「未设置」' },
+  { field: '学期', required: '否', desc: '如 2026-fall，留空按当前时间推断' },
+  { field: '课程编码', required: '否', desc: '如 CS301；与已有课程编码重复会跳过' },
+  { field: '课程描述', required: '否', desc: '一句话说明课程内容，便于在大纲/建议里对照' },
+]
 
 /** 当前登录用户 */
 const authStore = useAuthStore()
@@ -246,20 +331,105 @@ function statusType(status?: string): 'success' | 'info' | 'warning' {
   return 'warning'
 }
 
+async function loadCourses() {
+  if (!isTeacher.value) {
+    courses.value = []
+    return
+  }
+  courseLoading.value = true
+  try {
+    // 用 /learning-advice/courses（返回租户内全部课程）而不是 /teachers/courses：
+    // 后者只返回「本人创建」的课程，新教师/接管别人课程的教师会看到「无数据」无法建课堂。
+    const list = await learningAdviceApi.courses()
+    courses.value = list
+    if (!createForm.course_id && list.length) createForm.course_id = list[0].id
+    if (createForm.course_id && !list.some((c) => c.id === createForm.course_id)) {
+      createForm.course_id = list[0]?.id
+    }
+  } catch (e) {
+    console.error('加载课程失败:', e)
+  } finally {
+    courseLoading.value = false
+  }
+}
+
+function openCreateCourse(): void {
+  courseSelectRef.value?.blur()
+  createCourseForm.name = ''
+  createCourseForm.subject = ''
+  createCourseForm.grade = ''
+  createCourseVisible.value = true
+}
+
+async function doCreateCourse(): Promise<void> {
+  if (!createCourseForm.name.trim()) {
+    ElMessage.warning('请填写课程名称')
+    return
+  }
+  creatingCourse.value = true
+  try {
+    const created = await learningAdviceApi.createCourse({
+      name: createCourseForm.name.trim(),
+      subject: createCourseForm.subject.trim() || undefined,
+      grade: createCourseForm.grade.trim() || undefined,
+    })
+    ElMessage.success(created.existed ? '同名课程已存在，已为你选中' : `课程「${created.name}」已创建`)
+    createCourseVisible.value = false
+    await loadCourses()
+    createForm.course_id = created.id
+  } catch (e) {
+    console.error('创建课程失败:', e)
+  } finally {
+    creatingCourse.value = false
+  }
+}
+
+function openCourseImport(): void {
+  courseSelectRef.value?.blur()
+  courseImportVisible.value = true
+}
+
+async function doImportCourses(file: File): Promise<ImportDialogResult> {
+  const res: CourseImportResult = await learningAdviceApi.importCourses(file)
+  const summary: ImportSummaryPart[] = [
+    { text: `文件共 ${res.total} 行`, tone: 'muted' },
+    { text: `新增 ${res.created} 门课程`, tone: res.created ? 'ok' : 'bad' },
+  ]
+  if (res.skipped) summary.push({ text: `同名校验跳过 ${res.skipped} 门`, tone: 'warn' })
+  if (res.failed) summary.push({ text: `未通过校验 ${res.failed} 行`, tone: 'bad' })
+
+  let title: string
+  let tone: ImportDialogResult['tone']
+  if (!res.created && !res.skipped) {
+    title = '没有导入任何课程，请按下方原因修正后重试'
+    tone = 'error'
+  } else if (res.failed) {
+    title = `新增 ${res.created} 门课程，${res.failed} 行未通过校验`
+    tone = 'warning'
+  } else if (!res.created && res.skipped) {
+    title = `没有新增课程：${res.skipped} 门已存在`
+    tone = 'warning'
+  } else {
+    title = `成功新增 ${res.created} 门课程`
+    tone = 'success'
+  }
+
+  return { title, tone, summary, errors: res.errors, errorsTruncated: res.errors_truncated, payload: res }
+}
+
+async function onCoursesImported(result: ImportDialogResult): Promise<void> {
+  const payload = result.payload as CourseImportResult | undefined
+  await loadCourses()
+  const first = payload?.created_rows?.[0]?.name
+  const hit = first ? courses.value.find((c) => c.name === first) : undefined
+  if (hit) createForm.course_id = hit.id
+}
+
 async function loadLobby() {
   loading.value = true
   try {
-    const [list, courseList] = await Promise.all([
-      classroomApi.listClassrooms(),
-      // 课程下拉只服务「发起课堂」，学生账号调 /teachers/courses 会被 RBAC 拦成 403，
-      // 页面就会莫名弹出「权限不足」。所以按角色决定要不要请求。
-      isTeacher.value
-        ? api.get('/teachers/courses').then((res: any) => (res.data ?? []) as CourseOption[]).catch(() => [])
-        : Promise.resolve([] as CourseOption[]),
-    ])
+    const [list] = await Promise.all([classroomApi.listClassrooms(), loadCourses()])
     classrooms.value = list
-    courses.value = courseList
-    if (!createForm.course_id && courseList.length) createForm.course_id = courseList[0].id
   } catch (e) {
     console.error('加载课堂列表失败:', e)
   } finally {
@@ -293,6 +463,10 @@ async function refreshRoom() {
 async function onCreate() {
   if (!createForm.title.trim()) {
     ElMessage.warning('请填写课堂主题')
+    return
+  }
+  if (!createForm.course_id) {
+    ElMessage.warning('请先在「所属课程」里选择课程；没有课程可点下拉底部的「新建课程」')
     return
   }
   creating.value = true
@@ -490,6 +664,40 @@ onBeforeUnmount(stopPolling)
   background: var(--el-color-info-light-9);
   color: var(--el-text-color-regular);
   font-size: 13px;
+  line-height: 1.6;
+}
+
+.course-option__name {
+  margin-right: 8px;
+}
+
+.course-option__meta {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.course-select__footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--el-border-color-lighter);
+  padding: 6px 12px;
+
+  :deep(.el-button) {
+    font-size: 12px;
+  }
+}
+
+.course-empty {
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.dialog-tip {
+  margin: 0 0 4px 72px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
   line-height: 1.6;
 }
 

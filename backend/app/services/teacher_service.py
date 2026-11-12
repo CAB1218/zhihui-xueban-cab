@@ -7,7 +7,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import and_, desc, func, select
+from sqlalchemy import and_, case, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.lesson_plan_agent import LessonPlanAgent
@@ -70,9 +70,9 @@ class TeacherService:
         recent_plans_result = await self.db.execute(recent_plans_stmt)
         recent_plans = recent_plans_result.scalars().all()
 
-        # 学生总数（简化统计）
+        # 课程数：与 list_courses 同口径（租户内启用课程），避免「卡片 0 门 / 列表 4 门」自相矛盾
         course_count_stmt = select(func.count(Course.id)).where(
-            and_(Course.teacher_id == teacher_id, Course.tenant_id == tenant_id, Course.is_active == True)
+            and_(Course.tenant_id == tenant_id, Course.is_active == True)
         )
         course_count = (await self.db.execute(course_count_stmt)).scalar() or 0
 
@@ -81,7 +81,6 @@ class TeacherService:
             .join(Course, Course.id == CourseEnrollment.course_id)
             .where(
                 and_(
-                    Course.teacher_id == teacher_id,
                     Course.tenant_id == tenant_id,
                     Course.is_active == True,
                     CourseEnrollment.dropped_at.is_(None),
@@ -113,13 +112,20 @@ class TeacherService:
         }
 
     async def list_courses(self, tenant_id: int, teacher_id: int) -> List[Dict[str, Any]]:
-        """Return active courses owned by the current teacher."""
+        """Return the courses a teacher can use in this tenant.
+
+        之前只返回 ``teacher_id == 本人`` 的课程，导致「接管别人课程」或
+        「课程都建在管理员名下」的教师在下拉里看到「无数据」，既不能发起课堂，
+        也进不了班级诊断。现在改为返回租户内全部启用课程，本人课程排在前面，
+        并用 ``owned`` 标记归属，前端可按需区分「我的课程」和「共享课程」。
+        """
         stmt = (
             select(Course)
-            .where(
-                and_(Course.tenant_id == tenant_id, Course.teacher_id == teacher_id, Course.is_active == True)
+            .where(and_(Course.tenant_id == tenant_id, Course.is_active == True))
+            .order_by(
+                case((Course.teacher_id == teacher_id, 0), else_=1),
+                desc(Course.updated_at),
             )
-            .order_by(desc(Course.updated_at))
         )
         courses = (await self.db.execute(stmt)).scalars().all()
         return [
@@ -130,6 +136,8 @@ class TeacherService:
                 "grade": course.grade,
                 "semester": course.semester,
                 "description": course.description,
+                "teacher_id": course.teacher_id,
+                "owned": course.teacher_id == teacher_id,
             }
             for course in courses
         ]
