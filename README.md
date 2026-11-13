@@ -7,6 +7,9 @@
 
 > 大学本科生场景的 AI 智慧教学平台。Vue 3 + Element Plus 前端，FastAPI + 多数据库后端，Docker 一键部署。
 
+> 📘 **只想先把项目跑起来？** 直接看 **[`RUNNING.md`](./RUNNING.md)** —— 逐步命令、验收清单、排错表、重置流程。
+> 🤖 **由 AI 助手代跑？** 让它先读 **[`AGENTS.md`](./AGENTS.md)**，再按 RUNNING.md 执行。
+
 ---
 
 ## 📋 目录
@@ -91,7 +94,7 @@ AI4EDU 是面向**大学本科生**的 AI 智慧教学平台，核心场景包�
 | **7687** | Neo4j Bolt | 图谱驱动协议 |
 | **8123** | ClickHouse HTTP | 分析查询 |
 | **9001** | ClickHouse Native | 分析查询（容器内 9000 → 宿主 9001） |
-| **9000** | Elasticsearch HTTP | 搜索 |
+| **9200** | Elasticsearch HTTP | 搜索 |
 | **9002** | MinIO API | 对象存储（容器内 9000 → 宿主 9002） |
 | **9003** | MinIO Console | 管理控制台（http://localhost:9003，账号 minioadmin / minioadmin） |
 
