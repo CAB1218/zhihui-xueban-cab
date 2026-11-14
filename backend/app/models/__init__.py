@@ -31,3 +31,8 @@ from app.models.learning_record import LearningRecord  # noqa: F401
 from app.models.learning_plan import LearningPlan  # noqa: F401
 from app.models.course_schedule import CourseSchedule  # noqa: F401
 from app.models.llm_config import LlmProviderConfig  # noqa: F401
+from app.models.contest import (  # noqa: F401
+    ContestCourseRequirement,
+    ContestExamNode,
+    ContestMaterial,
+)

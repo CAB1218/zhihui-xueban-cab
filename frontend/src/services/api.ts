@@ -84,6 +84,13 @@ api.interceptors.response.use(
 
     const { status, data } = response
 
+    // 允许调用方用 config.silent 关闭自动 toast：
+    // 例如「该课程暂无学情记录」这类 404 属于正常空态，应由页面渲染空状态而不是弹错误
+    const silent = (error.config as { silent?: boolean } | undefined)?.silent === true
+    if (silent) {
+      return Promise.reject(error)
+    }
+
     switch (status) {
       case 401: {
         const authStore = useAuthStore()

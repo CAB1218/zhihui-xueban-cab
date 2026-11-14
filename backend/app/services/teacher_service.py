@@ -17,6 +17,7 @@ from app.models.course import Course, CourseEnrollment
 from app.models.resource import Resource
 from app.models.user import User
 from app.models.diagnosis import Diagnosis
+from app.models.learning_record import LearningRecord
 from app.schemas.common import PaginatedResponse, PaginationParams
 
 logger = logging.getLogger(__name__)
@@ -128,6 +129,16 @@ class TeacherService:
             )
         )
         courses = (await self.db.execute(stmt)).scalars().all()
+
+        # 每门课已有的学情记录数：前端据此默认选中「有数据」的课程，
+        # 避免打开学情分析页时落在空课程上显示 0 条、并触发 404 空态
+        count_rows = await self.db.execute(
+            select(LearningRecord.course_id, func.count(LearningRecord.id))
+            .where(LearningRecord.tenant_id == tenant_id)
+            .group_by(LearningRecord.course_id)
+        )
+        record_counts = {cid: n for cid, n in count_rows.all()}
+
         return [
             {
                 "id": course.id,
@@ -138,6 +149,7 @@ class TeacherService:
                 "description": course.description,
                 "teacher_id": course.teacher_id,
                 "owned": course.teacher_id == teacher_id,
+                "record_count": record_counts.get(course.id, 0),
             }
             for course in courses
         ]

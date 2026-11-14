@@ -513,7 +513,7 @@ const group = ref<GroupReport | null>(null)
 
 const courseId = ref<number | undefined>(undefined)
 const selectedStudentId = ref<number | undefined>(undefined)
-const courses = ref<Array<{ id: number; name: string }>>([])
+const courses = ref<Array<{ id: number; name: string; record_count?: number }>>([])
 
 const authStore = useAuthStore()
 
@@ -559,10 +559,11 @@ async function loadCourses() {
   try {
     const res: any = await api.get('/teachers/courses')
     const list = (res?.data ?? res) as any[]
-    courses.value = Array.isArray(list) ? list.map((c) => ({ id: c.id, name: c.name })) : []
+    courses.value = Array.isArray(list) ? list.map((c) => ({ id: c.id, name: c.name, record_count: c.record_count ?? 0 })) : []
     if (!courseId.value && courses.value.length) {
-      const cs = courses.value.find((c) => c.name.includes('数据结构'))
-      courseId.value = cs?.id ?? courses.value[0].id
+      // 默认选「有学情记录最多」的课程，避免落到空课程上显示 0 条数据
+      const withData = [...courses.value].sort((a, b) => (b.record_count ?? 0) - (a.record_count ?? 0))[0]
+      courseId.value = (withData.record_count ?? 0) > 0 ? withData.id : courses.value[0].id
     }
   } catch {
     courses.value = []
@@ -595,7 +596,10 @@ async function loadIndividual() {
     individual.value = await learningAnalysisApi.individual(selectedStudentId.value, courseId.value)
   } catch (e: any) {
     individual.value = null
-    ElMessage.warning(e?.message || '该学生暂无可用记录')
+    // 该课程下没有这名学生的记录属正常空态，不弹错误
+    if (e?.response?.status !== 404) {
+      ElMessage.warning(e?.message || '该学生暂无可用记录')
+    }
   }
 }
 

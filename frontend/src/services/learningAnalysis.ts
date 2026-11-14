@@ -209,14 +209,17 @@ export const learningAnalysisApi = {
   async individual(studentId: number, courseId?: number): Promise<IndividualReport> {
     const res = await api.get(`/learning-analysis/individual/${studentId}`, {
       params: courseId ? { course_id: courseId } : {},
-    })
+      // 该课程下无此人记录时后端返回 404，属正常空态，交给页面渲染空状态
+      silent: true,
+    } as Record<string, unknown>)
     return (res as any).data ?? res
   },
 
   async group(courseId?: number): Promise<GroupReport> {
     const res = await api.get('/learning-analysis/group', {
       params: courseId ? { course_id: courseId } : {},
-    })
+      silent: true,
+    } as Record<string, unknown>)
     return (res as any).data ?? res
   },
 
