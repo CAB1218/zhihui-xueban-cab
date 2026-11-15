@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 加载动画组件
+ * 智慧学伴 加载动画组件
  */
 defineProps<{
   size?: 'small' | 'medium' | 'large'

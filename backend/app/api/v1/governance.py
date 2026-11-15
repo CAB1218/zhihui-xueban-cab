@@ -1,5 +1,5 @@
 """
-AI4Edu 数据治理 API
+智慧学伴 数据治理 API
 提供数据导出、审计日志、隐私设置等端点
 """
 from typing import Optional

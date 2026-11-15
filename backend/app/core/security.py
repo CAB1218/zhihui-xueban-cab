@@ -1,5 +1,5 @@
 """
-AI4Edu 安全工具模块
+智慧学伴 安全工具模块
 JWT Token 生成/验证、密码哈希、AES-256 加密
 """
 from datetime import datetime, timedelta, timezone

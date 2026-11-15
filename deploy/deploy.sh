@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# AI4EDU 阿里云 ECS 一键部署脚本
+# 智慧学伴 阿里云 ECS 一键部署脚本
 # 用法：在服务器上执行：
 #   curl -fsSL https://raw.githubusercontent.com/CAG1218/ai4edu/main/deploy/deploy.sh | bash
 # 或：
@@ -10,7 +10,7 @@
 set -e
 
 echo "=============================================="
-echo "  AI4EDU 云服务器部署脚本"
+echo "  智慧学伴 云服务器部署脚本"
 echo "  公网 IP: ${PUBLIC_IP:-$(curl -s ifconfig.me)}"
 echo "=============================================="
 echo ""
@@ -95,7 +95,7 @@ fi
 # 第 3 步：克隆代码仓库
 # ========================================
 echo ""
-echo ">>> [3/6] 克隆 AI4EDU 代码..."
+echo ">>> [3/6] 克隆 智慧学伴 代码..."
 
 if [ -d "$PROJECT_DIR" ]; then
     warn "项目目录已存在，更新代码..."
@@ -127,7 +127,7 @@ SECRET_KEY=$(openssl rand -hex 32)
 JWT_SECRET=$(openssl rand -hex 32)
 
 cat > .env << ENVEOF
-# AI4Edu 后端环境变量 — 生产环境（自动生成）
+# 智慧学伴 后端环境变量 — 生产环境（自动生成）
 APP_NAME=ai4edu
 APP_ENV=production
 DEBUG=false
@@ -268,7 +268,7 @@ fi
 # ========================================
 echo ""
 echo "=============================================="
-echo "  ✅ AI4EDU 部署完成！"
+echo "  ✅ 智慧学伴 部署完成！"
 echo "=============================================="
 echo ""
 PUBLIC_IP=$(curl -s ifconfig.me 2>/dev/null || echo "<你的公网IP>")

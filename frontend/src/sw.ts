@@ -1,5 +1,5 @@
 /**
- * AI4Edu Service Worker
+ * 智慧学伴 Service Worker
  * 基于 Workbox 7.x 的 PWA 离线支持
  *
  * 缓存策略：

@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 文件预览组件
+ * 智慧学伴 文件预览组件
  */
 import { computed } from 'vue'
 import { Document } from '@element-plus/icons-vue'

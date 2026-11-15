@@ -60,7 +60,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 场景化布局
+ * 智慧学伴 场景化布局
  * 根据当前场景动态切换主题样式
  */
 import { computed, onMounted, watch } from 'vue'

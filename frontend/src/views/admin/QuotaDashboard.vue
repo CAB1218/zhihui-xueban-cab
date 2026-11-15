@@ -233,7 +233,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 配额管理看板
+ * 智慧学伴 配额管理看板
  * 展示租户配额使用情况 + 模型负载均衡状态
  */
 import { ref, computed, onMounted } from 'vue'

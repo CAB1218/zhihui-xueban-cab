@@ -1,5 +1,5 @@
 """
-AI4Edu OpenTelemetry 可观测性配置
+智慧学伴 OpenTelemetry 可观测性配置
 集成 Jaeger/Zipkin 链路追踪 + Prometheus 指标
 """
 import logging

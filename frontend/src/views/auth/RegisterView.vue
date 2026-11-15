@@ -99,7 +99,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 注册页
+ * 智慧学伴 注册页
  * 表单验证 + 角色选择
  */
 import { ref, reactive } from 'vue'

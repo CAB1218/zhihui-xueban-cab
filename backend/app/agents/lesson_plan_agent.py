@@ -1,5 +1,5 @@
 """
-AI4Edu 备课助手Agent
+智慧学伴 备课助手Agent
 根据课程目标生成教学计划、教案
 """
 import logging

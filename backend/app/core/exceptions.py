@@ -1,5 +1,5 @@
 """
-AI4Edu 自定义异常与全局异常处理器
+智慧学伴 自定义异常与全局异常处理器
 统一错误响应格式: {"code": int, "data": null, "message": str}
 """
 from typing import Any, Optional

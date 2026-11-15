@@ -1,5 +1,5 @@
 /**
- * AI4Edu 用户 Store
+ * 智慧学伴 用户 Store
  * 管理用户偏好、Onboarding 状态
  */
 import { defineStore } from 'pinia'

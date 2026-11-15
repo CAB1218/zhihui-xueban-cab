@@ -1,5 +1,5 @@
 """
-AI4Edu 通知WebSocket处理器
+智慧学伴 通知WebSocket处理器
 推送实时通知
 """
 import json

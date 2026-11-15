@@ -1,5 +1,5 @@
 """
-AI4Edu AI异步任务
+智慧学伴 AI异步任务
 批量诊断、文档解析、AI增强笔记
 """
 import json

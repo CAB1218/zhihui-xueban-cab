@@ -1,5 +1,5 @@
 """
-AI4Edu 后端配置管理模块
+智慧学伴 后端配置管理模块
 使用 Pydantic Settings 从环境变量加载配置
 """
 from typing import List

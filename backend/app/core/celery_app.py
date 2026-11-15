@@ -1,5 +1,5 @@
 """
-AI4Edu Celery 应用实例
+智慧学伴 Celery 应用实例
 提供异步任务队列 + Beat 定时调度（模型健康检查每 60s 执行）
 
 启动 Worker: celery -A app.core.celery_app worker -l info

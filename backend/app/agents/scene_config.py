@@ -1,5 +1,5 @@
 """
-AI4Edu 场景预设配置模块
+智慧学伴 场景预设配置模块
 定义 4 类学习场景的预设配置（自习/预习/复习/冲刺）
 """
 from dataclasses import dataclass, field

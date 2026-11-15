@@ -1,5 +1,5 @@
 """
-AI4Edu 笔记 ORM 模型
+智慧学伴 笔记 ORM 模型
 """
 from datetime import datetime
 from typing import Optional

@@ -1,5 +1,5 @@
 """
-AI4Edu 笔记Schema
+智慧学伴 笔记Schema
 NoteCreate / NoteUpdate / NoteResponse / NoteVersionResponse / ShareResponse
 """
 from datetime import datetime

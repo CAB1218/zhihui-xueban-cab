@@ -1,5 +1,5 @@
 /**
- * AI4Edu 个人课表 API
+ * 智慧学伴 个人课表 API
  * 场景仪表盘「导入课表」：上传 CSV/Excel → 今日课表与今日课程数随之更新
  */
 import api from './api'

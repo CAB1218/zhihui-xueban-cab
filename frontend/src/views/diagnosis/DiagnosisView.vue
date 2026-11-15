@@ -147,7 +147,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 学习诊断页
+ * 智慧学伴 学习诊断页
  * 诊断类型选择 + 答题界面 + 诊断报告（雷达图+得分+建议）
  */
 import { ref, computed, nextTick } from 'vue'

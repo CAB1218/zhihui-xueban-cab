@@ -1,5 +1,5 @@
 """
-AI4Edu ORM 模型包
+智慧学伴 ORM 模型包
 
 导入所有模型确保 Base.metadata 包含所有表定义
 """

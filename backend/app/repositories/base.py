@@ -1,5 +1,5 @@
 """
-AI4Edu 基础 Repository
+智慧学伴 基础 Repository
 提供通用 CRUD 操作，所有具体 Repository 继承此类
 """
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar

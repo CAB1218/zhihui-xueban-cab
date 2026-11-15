@@ -1,5 +1,5 @@
 /**
- * AI4Edu 笔记编辑器组合式函数
+ * 智慧学伴 笔记编辑器组合式函数
  * 管理编辑器状态、AI增强、自动保存、快捷键、Markdown切换
  */
 import { ref, computed, watch, onMounted, onUnmounted, type Ref } from 'vue'

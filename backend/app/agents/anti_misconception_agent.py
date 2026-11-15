@@ -1,5 +1,5 @@
 """
-AI4Edu 反Misconception Agent
+智慧学伴 反Misconception Agent
 识别常见错误概念并提供纠正
 """
 import logging

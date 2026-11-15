@@ -173,7 +173,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 笔记编辑页
+ * 智慧学伴 笔记编辑页
  * 顶部工具栏 + 左侧编辑区 + 右侧AI面板 + 底部状态栏
  */
 import { ref, computed, onMounted, watch } from 'vue'

@@ -1,5 +1,5 @@
 """
-AI4Edu 学习诊断 API
+智慧学伴 学习诊断 API
 提供知识诊断、学习报告、弱点分析等端点
 """
 from typing import Optional

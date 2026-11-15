@@ -90,7 +90,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 知识图谱广场视图
+ * 智慧学伴 知识图谱广场视图
  * 12学科分类卡片网格 + 搜索 + 排序 + misconception标注 + 跨学科入口
  */
 import { ref, computed, onMounted } from 'vue'

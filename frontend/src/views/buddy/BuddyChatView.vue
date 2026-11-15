@@ -108,7 +108,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 学伴聊天页
+ * 智慧学伴 学伴聊天页
  * 温馨对话界面 + 学习计划卡片 + 心情记录 + 鼓励消息
  */
 import { ref, reactive, nextTick, onMounted } from 'vue'

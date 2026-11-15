@@ -1,5 +1,5 @@
 /**
- * AI4Edu PWA 组合式函数
+ * 智慧学伴 PWA 组合式函数
  * 管理安装状态、更新提示、离线检测
  */
 import { ref, onMounted, onUnmounted } from 'vue'

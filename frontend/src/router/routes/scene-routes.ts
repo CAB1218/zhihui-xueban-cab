@@ -1,5 +1,5 @@
 /**
- * AI4Edu 场景化路由定义
+ * 智慧学伴 场景化路由定义
  * 核心路由结构：/scene/:sceneType/*
  * 包含 SceneRouterView 场景路由容器
  */

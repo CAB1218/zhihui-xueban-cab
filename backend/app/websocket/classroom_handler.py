@@ -1,5 +1,5 @@
 """
-AI4Edu 课堂WebSocket处理器
+智慧学伴 课堂WebSocket处理器
 处理：加入/离开课堂、举手、投票、弹幕、问答
 """
 import json

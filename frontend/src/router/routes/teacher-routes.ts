@@ -1,5 +1,5 @@
 /**
- * AI4Edu 教师路由
+ * 智慧学伴 教师路由
  * /teacher/* 路径下的教师工作台页面
  */
 import type { RouteRecordRaw } from 'vue-router'

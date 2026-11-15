@@ -203,7 +203,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu AI智能体对话页面
+ * 智慧学伴 AI智能体对话页面
  * 左侧会话列表 + 右侧对话区域 + WebSocket流式消息
  */
 import { ref, onMounted, nextTick, watch, computed } from 'vue'

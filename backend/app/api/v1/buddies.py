@@ -1,5 +1,5 @@
 """
-AI4Edu 学伴 API
+智慧学伴 学伴 API
 提供学伴配置、互动、学习报告等端点
 """
 from typing import Optional

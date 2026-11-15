@@ -1,5 +1,5 @@
 """
-AI4Edu 租户创建脚本
+智慧学伴 租户创建脚本
 用于创建新租户及其数据库Schema
 """
 import asyncio
@@ -92,7 +92,7 @@ async def main():
     """命令行入口"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="创建AI4Edu租户")
+    parser = argparse.ArgumentParser(description="创建智慧学伴租户")
     parser.add_argument("--name", required=True, help="租户名称")
     parser.add_argument("--slug", required=True, help="租户标识(URL友好)")
     parser.add_argument("--plan", default="free", choices=["free", "basic", "premium", "enterprise"], help="套餐类型")

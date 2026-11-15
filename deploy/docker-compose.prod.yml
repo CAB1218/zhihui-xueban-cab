@@ -1,4 +1,4 @@
-# AI4Edu 生产环境 Docker Compose 配置
+# 智慧学伴 生产环境 Docker Compose 配置
 # 包含12个服务，每个服务配置健康检查、资源限制和持久化卷
 
 version: "3.8"

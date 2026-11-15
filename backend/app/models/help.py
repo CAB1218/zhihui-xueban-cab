@@ -1,5 +1,5 @@
 """
-AI4Edu 帮助文章 ORM 模型
+智慧学伴 帮助文章 ORM 模型
 """
 from datetime import datetime
 from typing import Optional

@@ -1,5 +1,5 @@
 """
-AI4Edu 认证 Service
+智慧学伴 认证 Service
 处理用户注册、登录、Token刷新等业务逻辑
 """
 from datetime import datetime, timezone

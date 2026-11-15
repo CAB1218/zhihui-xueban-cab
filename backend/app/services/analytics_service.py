@@ -1,5 +1,5 @@
 """
-AI4Edu 分析事件 Service
+智慧学伴 分析事件 Service
 ClickHouse 事件追踪
 """
 import json

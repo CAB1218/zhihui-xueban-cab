@@ -1,5 +1,5 @@
 """
-AI4Edu 认证 Schema
+智慧学伴 认证 Schema
 """
 from datetime import datetime
 from typing import Any, Dict, Optional

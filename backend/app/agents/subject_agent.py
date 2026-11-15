@@ -1,5 +1,5 @@
 """
-AI4Edu 学科专家Agent
+智慧学伴 学科专家Agent
 提供数学/物理/化学/生物/历史/地理等学科专业解答
 注入 ResourceContextBuilder 实现用户/课程级别的资源感知
 """

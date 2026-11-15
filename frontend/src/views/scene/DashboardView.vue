@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 场景化仪表盘 — 分发器
+ * 智慧学伴 场景化仪表盘 — 分发器
  * 根据 currentSceneType 分发到独立场景仪表盘组件
  * 统计数据通过 provide 传递给子组件，避免 prop drilling
  */

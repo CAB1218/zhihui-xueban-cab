@@ -70,7 +70,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 侧边栏
+ * 智慧学伴 侧边栏
  * 支持折叠/展开，根据用户角色显示不同菜单
  */
 import { computed } from 'vue'

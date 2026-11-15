@@ -1,5 +1,5 @@
 """
-AI4Edu 数据库连接管理
+智慧学伴 数据库连接管理
 支持 PostgreSQL 多租户 Schema 隔离
 """
 import re

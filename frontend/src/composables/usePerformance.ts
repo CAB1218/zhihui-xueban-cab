@@ -1,5 +1,5 @@
 /**
- * AI4Edu 性能监控组合式函数
+ * 智慧学伴 性能监控组合式函数
  * 提供组件级别的性能追踪能力
  */
 import { ref, onMounted, onUnmounted } from 'vue'

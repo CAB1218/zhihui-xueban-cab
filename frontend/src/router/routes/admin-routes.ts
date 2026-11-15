@@ -1,5 +1,5 @@
 /**
- * AI4Edu 管理路由
+ * 智慧学伴 管理路由
  * /admin/* 路径下的管理后台页面
  */
 import type { RouteRecordRaw } from 'vue-router'

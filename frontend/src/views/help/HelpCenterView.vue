@@ -78,7 +78,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 帮助中心
+ * 智慧学伴 帮助中心
  * FAQ折叠面板 + 使用指南分类 + 联系支持入口
  */
 import { ref, computed } from 'vue'

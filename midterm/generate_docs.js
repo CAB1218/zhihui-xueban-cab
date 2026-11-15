@@ -163,7 +163,7 @@ const doc = new Document({
         alignment: AlignmentType.CENTER,
         spacing: { before: 2400, after: 400 },
         children: [new TextRun({
-          text: "AI4EDU 智慧教学平台",
+          text: "智慧学伴 智慧教学平台",
           font: "黑体", size: 48, bold: true, color: "2E75B6"
         })]
       }),
@@ -189,7 +189,7 @@ const doc = new Document({
       h1("一、项目背景与问题定义"),
 
       h2("1.1 应用场景"),
-      p("AI4EDU 智慧教学平台面向高校师生，致力于通过 AI Agent 技术构建下一代自适应智慧教学系统。平台覆盖四大核心教学场景："),
+      p("智慧学伴 智慧教学平台面向高校师生，致力于通过 AI Agent 技术构建下一代自适应智慧教学系统。平台覆盖四大核心教学场景："),
       p("• 课堂模式：跟随教师节奏，支持实时问答、投票、举手、分组协作；"),
       p("• 自习模式：学生自主学习，AI 导师提供个性化辅导、知识图谱导航、间隔重复训练；"),
       p("• 考前模式：模拟考试、错题回顾、计时训练、学习数据统计；"),
@@ -271,7 +271,7 @@ const doc = new Document({
       h1("三、系统设计"),
 
       h2("3.1 系统架构"),
-      p("AI4EDU 采用前后端分离架构，整体技术栈如下："),
+      p("智慧学伴 采用前后端分离架构，整体技术栈如下："),
 
       makeTable(
         ["层级", "技术选型", "说明"],
@@ -476,7 +476,7 @@ const doc = new Document({
       new Paragraph({
         alignment: AlignmentType.CENTER,
         children: [new TextRun({
-          text: "Agent 训练营 · AI4EDU 智慧教学平台",
+          text: "Agent 训练营 · 智慧学伴 智慧教学平台",
           font: "宋体", size: 24, color: "666666"
         })]
       }),

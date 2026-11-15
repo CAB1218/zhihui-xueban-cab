@@ -1,5 +1,5 @@
 """
-AI4Edu 模型健康检查 Celery beat 任务
+智慧学伴 模型健康检查 Celery beat 任务
 每 60 秒执行一次，探测各 LLM Provider 的健康状态
 
 流程:

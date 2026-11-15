@@ -1,5 +1,5 @@
 """
-AI4Edu 分析事件 ORM 模型
+智慧学伴 分析事件 ORM 模型
 ClickHouse 事件表
 """
 from datetime import datetime

@@ -1,5 +1,5 @@
 """
-AI4Edu 课堂 Schema
+智慧学伴 课堂 Schema
 - 课堂互动: ClassroomCreate / ClassroomResponse / PollCreate / PollVote / PollResult
 - v2 课堂记录: ClassroomRecordCreate / ClassroomRecordResponse (板书/录播 OCR/ASR)
 """

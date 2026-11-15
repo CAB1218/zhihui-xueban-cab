@@ -1,5 +1,5 @@
 /**
- * AI4Edu 课堂 Store
+ * 智慧学伴 课堂 Store
  * 管理课堂状态、参与者、投票、WebSocket连接
  */
 import { defineStore } from 'pinia'

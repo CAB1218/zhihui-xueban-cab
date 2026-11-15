@@ -78,7 +78,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 我的资源视图
+ * 智慧学伴 我的资源视图
  * 网格/列表切换 + 资源卡片 + 拖拽上传 + 批量操作
  */
 import { ref, reactive, onMounted } from 'vue'

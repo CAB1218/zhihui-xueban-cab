@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 应用布局框架
+ * 智慧学伴 应用布局框架
  * 包含侧边栏、顶部栏、内容区
  */
 import { computed } from 'vue'

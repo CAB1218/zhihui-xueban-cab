@@ -1,5 +1,5 @@
 /**
- * AI4Edu 笔记 Store
+ * 智慧学伴 笔记 Store
  * 管理笔记列表、当前笔记、版本历史、分享
  */
 import { defineStore } from 'pinia'

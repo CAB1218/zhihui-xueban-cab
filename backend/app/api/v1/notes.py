@@ -1,5 +1,5 @@
 """
-AI4Edu 笔记 API
+智慧学伴 笔记 API
 提供笔记 CRUD、AI增强、版本管理等端点
 """
 from typing import Optional

@@ -1,5 +1,5 @@
 """
-AI4Edu 数据加密模块
+智慧学伴 数据加密模块
 AES-256-CBC 加密 + PBKDF2 密钥派生 + 敏感字段加密
 """
 import base64

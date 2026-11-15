@@ -1,5 +1,5 @@
 """
-AI4Edu AI会话 ORM 模型
+智慧学伴 AI会话 ORM 模型
 """
 from datetime import datetime
 from typing import Optional

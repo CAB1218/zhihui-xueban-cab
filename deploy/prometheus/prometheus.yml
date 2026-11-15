@@ -1,4 +1,4 @@
-# AI4Edu Prometheus 配置
+# 智慧学伴 Prometheus 配置
 # 采集间隔：15秒
 # 采集目标：backend(:8000), node_exporter, cadvisor
 
@@ -17,7 +17,7 @@ rule_files:
 
 # 采集配置
 scrape_configs:
-  # ============ AI4Edu Backend ============
+  # ============ 智慧学伴 Backend ============
   - job_name: "ai4edu-backend"
     metrics_path: "/metrics"
     scheme: http

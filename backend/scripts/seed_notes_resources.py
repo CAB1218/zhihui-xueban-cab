@@ -36,7 +36,7 @@ def fetch_all(conn, sql):
 
 def main():
     conn = get_conn()
-    print("=== AI4Edu 笔记&资源种子数据 ===\n")
+    print("=== 智慧学伴 笔记&资源种子数据 ===\n")
 
     # 1. 获取 tenant / user / course
     tenants = fetch_all(conn, "SELECT id, name FROM tenants LIMIT 5")

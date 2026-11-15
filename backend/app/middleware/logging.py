@@ -1,5 +1,5 @@
 """
-AI4Edu 请求日志中间件
+智慧学伴 请求日志中间件
 使用 structlog 输出结构化 JSON 日志 + 审计日志
 """
 import time

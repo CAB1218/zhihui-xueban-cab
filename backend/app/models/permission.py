@@ -1,5 +1,5 @@
 """
-AI4Edu RBAC 权限 ORM 模型
+智慧学伴 RBAC 权限 ORM 模型
 """
 from datetime import datetime
 from typing import Optional

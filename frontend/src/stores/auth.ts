@@ -1,5 +1,5 @@
 /**
- * AI4Edu 认证 Store
+ * 智慧学伴 认证 Store
  * 管理JWT Token、用户信息、登录/登出/刷新Token
  */
 import { defineStore } from 'pinia'

@@ -1,1 +1,1 @@
-# AI4Edu Test API Package
+# 智慧学伴 Test API Package

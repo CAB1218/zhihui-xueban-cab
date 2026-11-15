@@ -55,8 +55,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       /** Web App Manifest 配置 */
       manifest: {
-        name: 'AI4Edu - 智慧教学平台',
-        short_name: 'AI4Edu',
+        name: '智慧学伴 - 智慧教学平台',
+        short_name: '智慧学伴',
         description: 'AI驱动的智慧教学平台，支持课堂互动、智能辅导与个性化学习',
         theme_color: '#1976D2',
         background_color: '#FFFFFF',

@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 全局搜索框
+ * 智慧学伴 全局搜索框
  * el-autocomplete + 搜索历史 + Ctrl+K 快捷键
  */
 import { ref, onMounted, onUnmounted } from 'vue'

@@ -1,5 +1,5 @@
 """
-AI4Edu 校验工具
+智慧学伴 校验工具
 """
 import re
 from typing import Optional

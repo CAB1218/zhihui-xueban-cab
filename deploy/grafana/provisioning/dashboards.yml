@@ -1,9 +1,9 @@
 apiVersion: 1
 
 providers:
-  - name: AI4Edu Dashboards
+  - name: 智慧学伴 Dashboards
     orgId: 1
-    folder: AI4Edu
+    folder: 智慧学伴
     type: file
     disableDeletion: false
     editable: true

@@ -1,5 +1,5 @@
 """
-AI4Edu 知识图谱模块 Pydantic Schema 集中定义
+智慧学伴 知识图谱模块 Pydantic Schema 集中定义
 包含 Misconception、CrossSubject、Task、CognitiveGoal 等所有图谱相关 Schema
 """
 from datetime import datetime

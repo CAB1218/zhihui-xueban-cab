@@ -1,5 +1,5 @@
 """
-AI4Edu RBAC 权限中间件
+智慧学伴 RBAC 权限中间件
 基于角色的访问控制，支持装饰器 + 权限缓存 + 细粒度权限校验
 """
 import functools

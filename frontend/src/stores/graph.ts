@@ -1,5 +1,5 @@
 /**
- * AI4EDU 知识图谱 Store
+ * 智慧学伴 知识图谱 Store
  * 管理图谱广场统计、节点详情、邻居数据、misconception、跨学科、任务
  */
 import { defineStore } from 'pinia'

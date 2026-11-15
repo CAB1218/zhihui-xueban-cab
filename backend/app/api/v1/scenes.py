@@ -1,5 +1,5 @@
 """
-AI4Edu 场景 API
+智慧学伴 场景 API
 提供场景切换、推荐、配置等端点
 """
 from typing import Optional

@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 底部导航（移动端）
+ * 智慧学伴 底部导航（移动端）
  */
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'

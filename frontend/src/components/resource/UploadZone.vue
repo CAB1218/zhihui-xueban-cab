@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 拖拽上传区域组件
+ * 智慧学伴 拖拽上传区域组件
  */
 import { ref } from 'vue'
 import { UploadFilled } from '@element-plus/icons-vue'

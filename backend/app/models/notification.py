@@ -1,5 +1,5 @@
 """
-AI4Edu 通知 ORM 模型
+智慧学伴 通知 ORM 模型
 """
 from datetime import datetime
 from typing import Optional

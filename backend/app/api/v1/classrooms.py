@@ -1,5 +1,5 @@
 """
-AI4Edu 课堂互动 API
+智慧学伴 课堂互动 API
 提供课堂创建、实时互动、举手、投票等端点
 """
 from typing import Optional

@@ -1,5 +1,5 @@
 /**
- * AI4Edu 笔记 API Service
+ * 智慧学伴 笔记 API Service
  * 封装笔记相关的API调用
  */
 import api from './api'

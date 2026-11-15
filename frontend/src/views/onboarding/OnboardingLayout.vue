@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu Onboarding 引导布局
+ * 智慧学伴 Onboarding 引导布局
  * 包含进度指示器和跳过按钮
  */
 import { computed } from 'vue'

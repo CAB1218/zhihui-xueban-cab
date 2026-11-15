@@ -1,5 +1,5 @@
 /**
- * AI4Edu 应用入口
+ * 智慧学伴 应用入口
  * 注册 Vue3 + Pinia + Router + Element Plus + i18n + PWA Service Worker
  */
 import { createApp } from 'vue'

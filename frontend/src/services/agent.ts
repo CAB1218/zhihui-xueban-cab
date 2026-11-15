@@ -1,5 +1,5 @@
 /**
- * AI4Edu Agent API Service
+ * 智慧学伴 Agent API Service
  * 封装所有AI智能体相关的API调用
  * 新增: 多模型列表、场景预设、引用来源、上下文摘要
  */

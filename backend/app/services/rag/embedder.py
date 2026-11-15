@@ -1,5 +1,5 @@
 """
-AI4Edu RAG 嵌入模块
+智慧学伴 RAG 嵌入模块
 文本分块(512token/50overlap) + 批量嵌入(OpenAI Embedding API)
 """
 import logging

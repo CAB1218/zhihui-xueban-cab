@@ -1,5 +1,5 @@
 """
-AI4Edu WebSocket服务器管理器
+智慧学伴 WebSocket服务器管理器
 维护连接池、房间管理、广播
 """
 import json

@@ -1,5 +1,5 @@
 """
-AI4Edu 分页工具
+智慧学伴 分页工具
 """
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 

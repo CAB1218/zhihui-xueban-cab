@@ -1,5 +1,5 @@
 """
-AI4Edu 用户 Service
+智慧学伴 用户 Service
 处理用户信息查询、更新、偏好设置、Onboarding 引导等业务逻辑
 """
 import json

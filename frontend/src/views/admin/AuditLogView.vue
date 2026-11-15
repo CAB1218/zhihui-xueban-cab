@@ -91,7 +91,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 审计日志页
+ * 智慧学伴 审计日志页
  * 日志表格 + 筛选（操作类型/时间范围/用户）+ 导出
  */
 import { ref, reactive, onMounted } from 'vue'

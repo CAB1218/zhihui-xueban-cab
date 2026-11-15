@@ -1,5 +1,5 @@
 """
-AI4Edu 心理支持Agent
+智慧学伴 心理支持Agent
 提供学习心理建议和压力疏导
 """
 import logging

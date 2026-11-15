@@ -1,5 +1,5 @@
 """
-AI4Edu LLM 用量日志 + 租户配额 ORM 模型
+智慧学伴 LLM 用量日志 + 租户配额 ORM 模型
 v2 新增：支持多租户模型配额计量
 """
 from datetime import datetime

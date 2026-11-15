@@ -1,5 +1,5 @@
 """
-AI4Edu 对话导出 Celery 任务
+智慧学伴 对话导出 Celery 任务
 异步执行会话导出（Markdown / PDF），上传到 MinIO。
 
 任务流程:

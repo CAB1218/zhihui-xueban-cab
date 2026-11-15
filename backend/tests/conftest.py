@@ -1,5 +1,5 @@
 """
-AI4Edu 测试配置
+智慧学伴 测试配置
 pytest fixtures: async_client, db_session, test_user, auth_headers, test_tenant
 使用 SQLite 内存数据库，模拟 Redis/Neo4j
 """

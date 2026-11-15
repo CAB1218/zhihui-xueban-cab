@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 顶部栏
+ * 智慧学伴 顶部栏
  * 包含搜索、通知、用户菜单
  */
 import { ref, computed } from 'vue'

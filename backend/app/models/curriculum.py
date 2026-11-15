@@ -1,5 +1,5 @@
 """
-AI4EDU 课程梳理 ORM 模型
+智慧学伴 课程梳理 ORM 模型
 任务1（理解学科-学习内容与要求梳理）：存储用户输入的课程与 AI 梳理产出的大纲
 """
 from datetime import datetime

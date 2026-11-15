@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 知识点卡片组件
+ * 智慧学伴 知识点卡片组件
  * 支持 misconception 角标展示，subject 中英文映射
  */
 import { computed } from 'vue'

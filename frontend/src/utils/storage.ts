@@ -1,5 +1,5 @@
 /**
- * AI4Edu IndexedDB 离线存储工具
+ * 智慧学伴 IndexedDB 离线存储工具
  * 封装 idb 库，提供离线笔记、对话缓存、草稿保存等功能
  */
 import { openDB, type IDBPDatabase, type DBSchema } from 'idb'

@@ -121,7 +121,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 数据治理页
+ * 智慧学伴 数据治理页
  * 数据分类列表 + 敏感数据扫描结果 + 合规状态仪表盘
  */
 import { ref, onMounted } from 'vue'

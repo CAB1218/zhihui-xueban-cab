@@ -1,5 +1,5 @@
 """
-AI4Edu 配额管理相关 Pydantic Schema
+智慧学伴 配额管理相关 Pydantic Schema
 v2 新增：多租户模型配额计量
 """
 from typing import Any, Dict, List, Optional

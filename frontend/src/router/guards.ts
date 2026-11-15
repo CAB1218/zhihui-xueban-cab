@@ -1,5 +1,5 @@
 /**
- * AI4Edu 路由守卫
+ * 智慧学伴 路由守卫
  * 认证检查 + Onboarding 引导检查 + 角色权限检查
  */
 import type { Router } from 'vue-router'

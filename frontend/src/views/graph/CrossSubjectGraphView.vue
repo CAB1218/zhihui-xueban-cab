@@ -157,7 +157,7 @@
 
 <script setup lang="ts">
 /**
- * AI4EDU 跨学科关联图谱视图
+ * 智慧学伴 跨学科关联图谱视图
  * 支持学科选择、强度筛选、力导向图可视化、统计面板、图例
  */
 import { ref, computed, onMounted } from 'vue'

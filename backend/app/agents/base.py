@@ -1,5 +1,5 @@
 """
-AI4Edu Agent 基类
+智慧学伴 Agent 基类
 定义智能体公共接口：execute / stream_execute / system_prompt
 支持同步和流式输出，通过 LLMRouter 实现多模型路由与容灾
 """

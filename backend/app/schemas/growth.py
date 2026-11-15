@@ -1,5 +1,5 @@
 """
-AI4EDU 学生成长档案 Schemas
+智慧学伴 学生成长档案 Schemas
 评价 CRUD、时间线、仪表盘相关 Pydantic 模型
 """
 from datetime import datetime

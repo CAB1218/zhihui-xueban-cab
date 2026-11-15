@@ -1,5 +1,5 @@
 """
-AI4Edu 课堂记录 API 端点
+智慧学伴 课堂记录 API 端点
 板书/录播上传 → MinIO 存储 → Celery 异步 OCR/ASR 提取
 
 端点:

@@ -57,7 +57,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 登录页
+ * 智慧学伴 登录页
  * 表单验证 + 登录后 Onboarding 检查
  */
 import { ref, reactive } from 'vue'

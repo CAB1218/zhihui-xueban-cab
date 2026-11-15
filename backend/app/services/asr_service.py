@@ -1,5 +1,5 @@
 """
-AI4Edu ASR 多 Provider 抽象层
+智慧学伴 ASR 多 Provider 抽象层
 支持阿里云/腾讯云/Mock 三种语音识别服务，按优先级链降级
 
 设计模式: Strategy + Factory（与 OCR 层结构一致）

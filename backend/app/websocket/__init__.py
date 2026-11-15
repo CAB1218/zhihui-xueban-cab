@@ -1,3 +1,3 @@
 """
-AI4Edu WebSocket模块
+智慧学伴 WebSocket模块
 """

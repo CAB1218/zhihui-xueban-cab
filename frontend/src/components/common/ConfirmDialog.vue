@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 确认对话框组件
+ * 智慧学伴 确认对话框组件
  */
 import { computed } from 'vue'
 

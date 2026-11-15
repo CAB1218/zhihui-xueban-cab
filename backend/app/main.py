@@ -1,5 +1,5 @@
 """
-AI4Edu FastAPI 应用入口
+智慧学伴 FastAPI 应用入口
 注册中间件、路由、生命周期事件
 """
 from contextlib import asynccontextmanager

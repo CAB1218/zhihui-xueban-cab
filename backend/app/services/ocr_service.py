@@ -1,5 +1,5 @@
 """
-AI4Edu OCR 多 Provider 抽象层
+智慧学伴 OCR 多 Provider 抽象层
 支持阿里云/腾讯云/Mock 三种 OCR 服务，按优先级链降级
 
 设计模式: Strategy + Factory

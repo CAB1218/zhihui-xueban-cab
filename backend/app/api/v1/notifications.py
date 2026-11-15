@@ -1,5 +1,5 @@
 """
-AI4Edu 通知 API
+智慧学伴 通知 API
 提供通知列表、已读标记、推送配置等端点
 """
 from typing import Optional

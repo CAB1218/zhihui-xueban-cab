@@ -1,5 +1,5 @@
 """
-AI4Edu 全局依赖注入
+智慧学伴 全局依赖注入
 提供数据库会话、认证、权限等通用依赖
 """
 from typing import AsyncGenerator, List

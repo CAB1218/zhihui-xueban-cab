@@ -1,5 +1,5 @@
 """
-AI4Edu 通用Agent
+智慧学伴 通用Agent
 处理无法分类到具体Agent的请求
 """
 import logging

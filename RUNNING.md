@@ -1,4 +1,4 @@
-# 代码运行说明（智慧学伴 / AI4EDU）
+# 代码运行说明（智慧学伴 / 智慧学伴）
 
 > 面向：拿到本仓库、需要在**自己电脑上把项目跑起来**的人（或对方的 AI 助手）。
 > 目标：不读源码，只照本文档从上往下执行，30 分钟内看到登录页并能登录。
@@ -30,7 +30,7 @@
 
 | 项 | 内容 |
 |---|---|
-| 产品名 | 智慧学伴（原 AI4EDU，代码内包名/库名保留 ai4edu） |
+| 产品名 | 智慧学伴（原 智慧学伴，代码内包名/库名保留 ai4edu） |
 | 前端 | Vue 3 + TypeScript + Vite 8 + Element Plus + Pinia + ECharts/D3 |
 | 后端 | FastAPI + SQLAlchemy 2.0 (async) + Pydantic v2 + Celery |
 | 数据层 | PostgreSQL（主库）+ Neo4j（知识图谱）+ Redis（缓存/队列）+ ClickHouse（分析）+ Elasticsearch（搜索）+ MinIO（对象存储）+ ChromaDB（向量） |

@@ -65,7 +65,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 资源上传视图
+ * 智慧学伴 资源上传视图
  * 多文件 + 进度条 + 关联知识点
  */
 import { ref, reactive } from 'vue'

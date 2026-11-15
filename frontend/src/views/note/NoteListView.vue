@@ -154,7 +154,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 笔记列表页
+ * 智慧学伴 笔记列表页
  * 笔记卡片列表 + 搜索筛选 + 新建 + 分享
  */
 import { ref, reactive, onMounted } from 'vue'

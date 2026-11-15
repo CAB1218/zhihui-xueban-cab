@@ -1,5 +1,5 @@
 """
-AI4Edu 场景 Schema
+智慧学伴 场景 Schema
 """
 from datetime import datetime
 from typing import Any, Dict, List, Optional

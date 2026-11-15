@@ -1,5 +1,5 @@
 """
-AI4Edu 生产部署脚本
+智慧学伴 生产部署脚本
 一键构建镜像、初始化数据、启动服务
 """
 import subprocess
@@ -89,7 +89,7 @@ def init_infra():
 def main():
     """主流程"""
     print("=" * 60)
-    print("🚀 AI4Edu 生产部署")
+    print("🚀 智慧学伴 生产部署")
     print("=" * 60)
 
     steps = [

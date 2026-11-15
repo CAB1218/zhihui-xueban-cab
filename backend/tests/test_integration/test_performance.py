@@ -1,5 +1,5 @@
 """
-AI4Edu API 性能基准测试
+智慧学伴 API 性能基准测试
 使用 pytest-benchmark 测量关键 API 端点响应时间
 """
 import pytest

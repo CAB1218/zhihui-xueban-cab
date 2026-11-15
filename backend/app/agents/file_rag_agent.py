@@ -1,5 +1,5 @@
 """
-AI4Edu 文件解析Agent
+智慧学伴 文件解析Agent
 处理用户上传的PDF/Word/PPT，提取知识点并回答问题
 """
 import logging

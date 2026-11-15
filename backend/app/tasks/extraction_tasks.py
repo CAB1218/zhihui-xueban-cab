@@ -1,5 +1,5 @@
 """
-AI4Edu OCR/ASR 提取 Celery 任务
+智慧学伴 OCR/ASR 提取 Celery 任务
 异步处理板书图片 OCR 和录播视频 ASR
 
 任务流程:

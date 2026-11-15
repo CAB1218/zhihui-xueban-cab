@@ -1,5 +1,5 @@
 """
-AI4Edu Alembic 迁移环境配置
+智慧学伴 Alembic 迁移环境配置
 """
 from logging.config import fileConfig
 

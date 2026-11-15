@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 根组件
+ * 智慧学伴 根组件
  * 包含离线提示和路由视图，所有页面通过 router-view 渲染
  * 内置错误边界，防止白屏
  */

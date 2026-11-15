@@ -1,5 +1,5 @@
 /**
- * AI4Edu Service Worker
+ * 智慧学伴 Service Worker
  * 基于 Workbox 7.x 的 PWA 离线支持
  */
 
@@ -189,7 +189,7 @@ self.addEventListener('push', (event) => {
   if (!event.data) return
 
   const data = event.data.json()
-  const title = data.title || 'AI4Edu 通知'
+  const title = data.title || '智慧学伴 通知'
   const options = {
     body: data.body || '',
     icon: '/favicon.svg',

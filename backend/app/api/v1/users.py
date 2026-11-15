@@ -1,5 +1,5 @@
 """
-AI4Edu 用户 API
+智慧学伴 用户 API
 提供用户 CRUD、Onboarding、偏好设置等端点
 """
 from typing import Optional

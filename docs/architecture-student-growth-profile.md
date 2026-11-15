@@ -86,7 +86,7 @@
 
 ```python
 """
-AI4EDU 学生评价 ORM 模型
+智慧学伴 学生评价 ORM 模型
 """
 from datetime import datetime
 from typing import Optional
@@ -169,7 +169,7 @@ class StudentEvaluation(Base):
 
 ```python
 """
-AI4EDU 成长档案 Schemas
+智慧学伴 成长档案 Schemas
 """
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -356,7 +356,7 @@ async def get_dashboard(
 
 ```python
 """
-AI4EDU 成长档案聚合服务
+智慧学伴 成长档案聚合服务
 从多个数据源聚合学生学习行为数据
 """
 from datetime import datetime, timedelta

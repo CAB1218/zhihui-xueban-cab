@@ -1,5 +1,5 @@
 """
-AI4Edu 用户 Schema
+智慧学伴 用户 Schema
 """
 from datetime import datetime
 from typing import Optional, List

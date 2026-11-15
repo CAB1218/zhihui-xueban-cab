@@ -1,5 +1,5 @@
 """
-AI4Edu 用户 Repository
+智慧学伴 用户 Repository
 """
 from typing import Optional
 

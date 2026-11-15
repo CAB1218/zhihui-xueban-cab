@@ -1,5 +1,5 @@
 """
-AI4Edu JWT 认证中间件
+智慧学伴 JWT 认证中间件
 校验 Bearer Token 有效性，将用户信息注入 request.state
 """
 from typing import Callable

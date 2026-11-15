@@ -1,5 +1,5 @@
 /**
- * AI4EDU 知识图谱 API
+ * 智慧学伴 知识图谱 API
  */
 import api from './api'
 

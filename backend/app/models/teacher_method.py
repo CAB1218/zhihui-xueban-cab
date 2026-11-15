@@ -1,5 +1,5 @@
 """
-AI4Edu 老师方法 & 课堂记录 ORM 模型
+智慧学伴 老师方法 & 课堂记录 ORM 模型
 存储老师讲授的解题方法、课堂录播/板书结构化记录
 """
 from datetime import datetime

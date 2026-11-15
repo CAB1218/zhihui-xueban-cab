@@ -52,7 +52,7 @@ def upload_file(client, local_path, remote_path):
         sftp.close()
 
 def main():
-    print('=== AI4EDU v2 Cloud Deployment (Alibaba Cloud Mirrors) ===')
+    print('=== 智慧学伴 v2 Cloud Deployment (Alibaba Cloud Mirrors) ===')
 
     # 1. Connect
     print('\n[1/8] Connecting to server...')

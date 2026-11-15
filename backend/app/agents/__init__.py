@@ -1,5 +1,5 @@
 """
-AI4Edu Agents 模块
+智慧学伴 Agents 模块
 提供13种智能体 + 意图路由
 """
 from app.agents.base import BaseAgent

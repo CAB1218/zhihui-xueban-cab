@@ -1,4 +1,4 @@
-# AI4Edu Elasticsearch 配置
+# 智慧学伴 Elasticsearch 配置
 # 单节点模式，适用于生产环境小规模部署
 
 cluster.name: ai4edu-cluster

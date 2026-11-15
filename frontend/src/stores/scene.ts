@@ -1,5 +1,5 @@
 /**
- * AI4Edu 场景 Store
+ * 智慧学伴 场景 Store
  * 管理当前场景、推荐、配置、主题应用
  */
 import { defineStore } from 'pinia'

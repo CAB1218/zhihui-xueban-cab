@@ -147,7 +147,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 备课助手页
+ * 智慧学伴 备课助手页
  * 左侧输入+AI生成 + 右侧教案预览 + 底部资源推荐
  */
 import { ref, reactive, onMounted } from 'vue'

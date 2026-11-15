@@ -1,5 +1,5 @@
 """
-AI4Edu AI智能体 API
+智慧学伴 AI智能体 API
 提供AI对话、会话管理、智能体配置、多模型路由、场景预设等端点
 """
 import datetime

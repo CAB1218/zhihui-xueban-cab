@@ -1,5 +1,5 @@
 /**
- * AI4Edu 场景 API
+ * 智慧学伴 场景 API
  */
 import api from './api'
 import { SceneType } from '@/utils/constants'

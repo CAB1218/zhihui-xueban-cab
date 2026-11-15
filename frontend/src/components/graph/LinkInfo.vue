@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 /**
- * AI4EDU 关系信息组件
+ * 智慧学伴 关系信息组件
  * 支持关系强度展示和跨学科标记
  */
 import { computed } from 'vue'

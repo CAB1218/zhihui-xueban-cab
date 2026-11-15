@@ -1,5 +1,5 @@
 """
-AI4Edu 对话导出记录 ORM 模型
+智慧学伴 对话导出记录 ORM 模型
 v2 新增：支持对话导出 PDF/Markdown
 """
 from datetime import datetime

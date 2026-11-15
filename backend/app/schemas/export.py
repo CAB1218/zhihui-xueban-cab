@@ -1,5 +1,5 @@
 """
-AI4Edu 对话导出相关 Pydantic Schema
+智慧学伴 对话导出相关 Pydantic Schema
 v2 新增：对话导出 PDF/Markdown
 """
 from datetime import datetime

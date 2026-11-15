@@ -1,5 +1,5 @@
 """
-AI4EDU 课程梳理 Pydantic 数据契约
+智慧学伴 课程梳理 Pydantic 数据契约
 对应任务1：学习内容与要求清单 / 必要联系 / 材料出处
 """
 from datetime import datetime

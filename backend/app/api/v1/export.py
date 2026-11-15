@@ -1,5 +1,5 @@
 """
-AI4Edu 对话导出 API 端点
+智慧学伴 对话导出 API 端点
 支持将 AI 会话导出为 PDF / Markdown 格式。
 
 端点:

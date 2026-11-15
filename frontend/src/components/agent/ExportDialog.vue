@@ -92,7 +92,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 对话导出对话框
+ * 智慧学伴 对话导出对话框
  * 支持 Markdown / PDF 格式导出，展示导出历史和下载链接
  */
 import { ref, computed } from 'vue'

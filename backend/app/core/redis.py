@@ -1,5 +1,5 @@
 """
-AI4Edu Redis 连接管理
+智慧学伴 Redis 连接管理
 提供 Redis 客户端单例，支持异步操作
 """
 from typing import Optional

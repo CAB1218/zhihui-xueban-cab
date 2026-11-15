@@ -1,5 +1,5 @@
 """
-AI4Edu 课堂管理Agent
+智慧学伴 课堂管理Agent
 协助教师进行课堂互动（发题、统计、点名）
 """
 import logging

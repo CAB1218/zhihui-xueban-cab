@@ -1,5 +1,5 @@
 """
-AI4Edu 教师工作台 API
+智慧学伴 教师工作台 API
 提供教案管理、作业批改、学情分析等端点
 """
 from typing import Optional

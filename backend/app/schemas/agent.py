@@ -1,5 +1,5 @@
 """
-AI4Edu Agent相关Schema
+智慧学伴 Agent相关Schema
 SessionCreate / SessionResponse / MessageCreate / MessageResponse / AgentTypeResponse
 新增: ModelInfoResponse / ScenePresetResponse / CitationSchema / ContextSummary / SendMessageResponse / SessionContextResponse
 """

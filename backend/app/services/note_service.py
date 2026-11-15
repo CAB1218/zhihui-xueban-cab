@@ -1,5 +1,5 @@
 """
-AI4Edu 笔记服务
+智慧学伴 笔记服务
 CRUD、AI增强（调用agent）、版本管理、分享、E2E加密笔记支持
 """
 import json

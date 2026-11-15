@@ -1,5 +1,5 @@
 """
-AI4Edu 资源 Repository
+智慧学伴 资源 Repository
 继承 BaseRepository，扩展资源特有的数据库查询
 """
 from typing import Dict, List, Optional, Tuple

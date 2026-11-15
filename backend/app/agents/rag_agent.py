@@ -1,5 +1,5 @@
 """
-AI4Edu RAG知识问答Agent
+智慧学伴 RAG知识问答Agent
 调用已有的search_service + graph_service，支持流式回答
 注入 ResourceContextBuilder 实现用户/课程级别的资源感知
 """

@@ -176,7 +176,7 @@
 
 <script setup lang="ts">
 /**
- * AI4EDU Misconception 详情弹窗组件
+ * 智慧学伴 Misconception 详情弹窗组件
  * 显示误解（❌红色）、纠正（✅绿色）、主题、来源标记
  * 支持分页翻页、教师模式编辑/删除/AI辅助标注
  */

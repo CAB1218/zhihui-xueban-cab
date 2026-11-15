@@ -1,5 +1,5 @@
 """
-AI4Edu 诊断Agent
+智慧学伴 诊断Agent
 基于IRT模型分析知识掌握度，生成个性化诊断报告
 使用简化2PL模型（Two-Parameter Logistic）
 """

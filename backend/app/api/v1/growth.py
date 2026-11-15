@@ -1,5 +1,5 @@
 """
-AI4EDU 学生成长档案 API
+智慧学伴 学生成长档案 API
 评价 CRUD、时间线、仪表盘端点
 """
 from typing import Optional

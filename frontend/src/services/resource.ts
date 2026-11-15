@@ -1,5 +1,5 @@
 /**
- * AI4Edu 资源管理 API
+ * 智慧学伴 资源管理 API
  */
 import api from './api'
 

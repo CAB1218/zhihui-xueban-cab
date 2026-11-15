@@ -1,5 +1,5 @@
 """
-AI4Edu 安全中间件
+智慧学伴 安全中间件
 XSS 防护 + SQL 注入检测 + CSRF Token 校验
 """
 import re

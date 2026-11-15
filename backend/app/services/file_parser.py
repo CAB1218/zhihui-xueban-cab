@@ -1,5 +1,5 @@
 """
-AI4Edu 文件解析器
+智慧学伴 文件解析器
 支持 PDF / DOCX / PPTX 等格式的文本提取
 """
 import io

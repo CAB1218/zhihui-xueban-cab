@@ -107,7 +107,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 资源详情视图
+ * 智慧学伴 资源详情视图
  * 文件预览 + AI摘要 + 关联知识点 + 版本历史
  */
 import { ref, computed, onMounted, watch } from 'vue'

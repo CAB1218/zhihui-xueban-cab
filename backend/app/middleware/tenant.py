@@ -1,5 +1,5 @@
 """
-AI4Edu 租户识别中间件
+智慧学伴 租户识别中间件
 从请求头 X-Tenant-ID 或 JWT Token 中提取租户ID，
 动态设置数据库 search_path 实现多租户 Schema 隔离
 """

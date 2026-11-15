@@ -1,5 +1,5 @@
 """
-AI4Edu 权限管理 API
+智慧学伴 权限管理 API
 提供角色 CRUD、权限分配、用户角色管理等 RBAC 完整端点
 """
 from typing import Optional, List

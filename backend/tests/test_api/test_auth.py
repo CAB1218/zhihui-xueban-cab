@@ -1,5 +1,5 @@
 """
-AI4Edu 认证 API 测试
+智慧学伴 认证 API 测试
 测试用例：注册成功、注册重复邮箱、登录成功、登录错误密码、Token刷新、Token过期、登出
 """
 import pytest

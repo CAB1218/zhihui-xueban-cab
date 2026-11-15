@@ -1,5 +1,5 @@
 """
-AI4Edu API v1 路由注册
+智慧学伴 API v1 路由注册
 汇总所有子路由模块
 """
 from fastapi import APIRouter

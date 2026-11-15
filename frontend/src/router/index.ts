@@ -1,5 +1,5 @@
 /**
- * AI4Edu 路由配置
+ * 智慧学伴 路由配置
  * 场景化嵌套路由结构
  */
 import { createRouter, createWebHistory } from 'vue-router'

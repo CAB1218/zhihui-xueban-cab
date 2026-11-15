@@ -1,5 +1,5 @@
 /**
- * AI4Edu 学生成长档案 API
+ * 智慧学伴 学生成长档案 API
  * 提供教师评价 CRUD、成长时间线、成长仪表盘等接口
  */
 import api from './api'

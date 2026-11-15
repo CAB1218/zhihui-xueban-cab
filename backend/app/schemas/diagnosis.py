@@ -1,5 +1,5 @@
 """
-AI4Edu 诊断Schema
+智慧学伴 诊断Schema
 DiagnosisCreate / DiagnosisResponse / AnswerSubmit / DiagnosisReport
 """
 from datetime import datetime

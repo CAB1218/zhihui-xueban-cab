@@ -1,5 +1,5 @@
 """
-AI4EDU 学生评价 ORM 模型
+智慧学伴 学生评价 ORM 模型
 """
 from datetime import datetime
 from typing import Optional

@@ -128,7 +128,7 @@
 
 <script setup lang="ts">
 /**
- * AI4EDU 力导向图组件（自定义 SVG 实现，不依赖 D3）
+ * 智慧学伴 力导向图组件（自定义 SVG 实现，不依赖 D3）
  * 支持：拖拽/缩放/hover tooltip/节点点击/关系点击
  * 跨学科模式：虚线+渐变色连线、学科聚合力、misconception节点橙色边框
  */

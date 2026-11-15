@@ -1,5 +1,5 @@
 """
-AI4Edu 认证 API
+智慧学伴 认证 API
 提供登录、注册、Token刷新、当前用户信息等端点
 """
 import json

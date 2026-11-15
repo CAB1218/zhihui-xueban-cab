@@ -1,5 +1,5 @@
 /**
- * AI4Edu 资源管理 Store
+ * 智慧学伴 资源管理 Store
  * 管理资源列表、当前资源、上传进度
  */
 import { defineStore } from 'pinia'

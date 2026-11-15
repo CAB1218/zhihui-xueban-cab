@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 /**
- * AI4EDU Misconception 标注角标组件
+ * 智慧学伴 Misconception 标注角标组件
  * 橙色圆形 Warning 图标，hover 显示误解摘要 tooltip，click 打开详情弹窗
  */
 import { ref, computed } from 'vue'

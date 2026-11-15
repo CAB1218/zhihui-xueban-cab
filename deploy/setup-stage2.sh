@@ -1,6 +1,6 @@
 #!/bin/bash
 # ================================================
-#  AI4Edu 云服务器完整部署脚本（第2阶段：前端+数据库初始化）
+#  智慧学伴 云服务器完整部署脚本（第2阶段：前端+数据库初始化）
 #  用法: bash /opt/ai4edu/deploy/setup-stage2.sh
 # ================================================
 
@@ -8,7 +8,7 @@ set -e
 cd /opt/ai4edu
 
 echo "=============================================="
-echo "  AI4Edu 第2阶段部署：前端构建 + 数据库初始化"
+echo "  智慧学伴 第2阶段部署：前端构建 + 数据库初始化"
 echo "=============================================="
 
 # ---------- 1. 安装 Node.js (如果还没有) ----------
@@ -92,7 +92,7 @@ echo ">>> [5/5] 插入种子数据..."
 docker exec ai4edu-postgres psql -U ai4edu -d ai4edu << 'SQLEOF'
 
 -- 租户
-INSERT INTO tenants (name, slug, domain, plan) VALUES ('AI4EDU 默认租户', 'ai4edu', 'localhost', 'pro') ON CONFLICT (slug) DO NOTHING;
+INSERT INTO tenants (name, slug, domain, plan) VALUES ('智慧学伴 默认租户', 'ai4edu', 'localhost', 'pro') ON CONFLICT (slug) DO NOTHING;
 
 -- 管理员 (密码: admin123 的 bcrypt hash)
 INSERT INTO users (tenant_id, email, hashed_password, full_name, role, is_active, is_verified, onboarding_completed) VALUES 
@@ -109,7 +109,7 @@ SQLEOF
 
 echo ""
 echo "=============================================="
-echo "  ✅ AI4EDU 部署完成！"
+echo "  ✅ 智慧学伴 部署完成！"
 echo "=============================================="
 echo ""
 echo "  🌐 前端网站：   http://121.43.129.181"

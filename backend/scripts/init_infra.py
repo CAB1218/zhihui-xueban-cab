@@ -1,5 +1,5 @@
 """
-AI4Edu 基础设施业务初始化脚本
+智慧学伴 基础设施业务初始化脚本
 初始化 ClickHouse / MinIO / Elasticsearch 的业务数据结构
 """
 import json
@@ -360,7 +360,7 @@ def init_minio():
 # ==================== 主入口 ====================
 
 def main():
-    logger.info("AI4Edu 基础设施业务初始化")
+    logger.info("智慧学伴 基础设施业务初始化")
     logger.info("=" * 50)
 
     results = {}

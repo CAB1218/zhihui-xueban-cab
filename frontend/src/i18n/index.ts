@@ -1,5 +1,5 @@
 /**
- * AI4Edu 国际化配置
+ * 智慧学伴 国际化配置
  * 支持中文/英文双语
  */
 import { createI18n } from 'vue-i18n'

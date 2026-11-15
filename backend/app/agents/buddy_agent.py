@@ -1,5 +1,5 @@
 """
-AI4Edu 学伴Agent
+智慧学伴 学伴Agent
 陪伴式学习对话，提供鼓励和引导
 """
 import logging

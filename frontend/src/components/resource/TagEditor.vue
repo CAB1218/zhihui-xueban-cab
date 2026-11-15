@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 标签编辑器组件
+ * 智慧学伴 标签编辑器组件
  */
 import { ref } from 'vue'
 

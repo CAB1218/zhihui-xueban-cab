@@ -1,5 +1,5 @@
 """
-AI4Edu 资源管理 Service
+智慧学伴 资源管理 Service
 处理文件上传(MinIO+DB)、资源列表、关联知识点、AI标签、AI摘要等业务逻辑
 """
 import json

@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 /**
- * AI4Edu 空状态组件
+ * 智慧学伴 空状态组件
  */
 defineProps<{
   icon?: string

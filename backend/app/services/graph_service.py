@@ -1,5 +1,5 @@
 """
-AI4Edu 知识图谱 Service
+智慧学伴 知识图谱 Service
 基于 Neo4j 实现知识图谱查询、BFS邻居发现、推荐、misconception管理、跨学科图谱等业务逻辑
 所有 Cypher 查询均使用参数化以防止注入
 """

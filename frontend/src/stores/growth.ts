@@ -1,5 +1,5 @@
 /**
- * AI4Edu 学生成长档案 Store
+ * 智慧学伴 学生成长档案 Store
  * 管理成长仪表盘、时间线、教师评价等状态
  */
 import { defineStore } from 'pinia'

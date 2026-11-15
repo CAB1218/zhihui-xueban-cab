@@ -1,5 +1,5 @@
 """
-AI4Edu 通用响应/分页/错误码 Schema
+智慧学伴 通用响应/分页/错误码 Schema
 """
 from typing import Any, ClassVar, Generic, List, Optional, Tuple, TypeVar
 

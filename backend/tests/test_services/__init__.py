@@ -1,1 +1,1 @@
-# AI4Edu Test Services Package
+# 智慧学伴 Test Services Package

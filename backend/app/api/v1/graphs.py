@@ -1,5 +1,5 @@
 """
-AI4Edu 知识图谱 API
+智慧学伴 知识图谱 API
 提供图谱广场、节点查询、邻居遍历、推荐、misconception管理、跨学科图谱、任务查询等端点
 """
 import json

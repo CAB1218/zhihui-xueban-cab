@@ -1,5 +1,5 @@
 /**
- * AI4Edu 课堂 API Service
+ * 智慧学伴 课堂 API Service
  * 封装课堂互动相关的API调用
  */
 import api from './api'

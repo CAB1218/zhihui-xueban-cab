@@ -1,5 +1,5 @@
 /**
- * AI4Edu 学伴 API
+ * 智慧学伴 学伴 API
  * 封装 /api/v1/buddies/* 接口调用
  */
 import request from './api'

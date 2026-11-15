@@ -1,5 +1,5 @@
 """
-AI4Edu 多租户配额管理器
+智慧学伴 多租户配额管理器
 基于 Redis 的实时 token 计数 + PostgreSQL 配额配置
 
 Redis Key 设计:

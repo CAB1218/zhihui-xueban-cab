@@ -1,5 +1,5 @@
 """
-AI4Edu 大模型服务商配置 API
+智慧学伴 大模型服务商配置 API
 
 端点（挂载在 /agents/models/config 下）：
     GET    /                     查看三家服务商的当前配置（Key 只回显掩码）

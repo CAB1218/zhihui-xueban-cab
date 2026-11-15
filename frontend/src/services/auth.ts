@@ -1,5 +1,5 @@
 /**
- * AI4Edu 认证 API
+ * 智慧学伴 认证 API
  */
 import api from './api'
 

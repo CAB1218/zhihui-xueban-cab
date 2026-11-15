@@ -1,5 +1,5 @@
 /**
- * AI4Edu 格式化工具
+ * 智慧学伴 格式化工具
  */
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
