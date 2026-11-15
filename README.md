@@ -1,4 +1,4 @@
-# AI4EDU — AI 驱动的智慧教学平台
+# 智慧学伴 — AI 驱动的智慧教学平台
 
 [![Repository](https://img.shields.io/badge/GitHub-CAG1218%2Fai4edu-181717?logo=github)](https://github.com/CAG1218/ai4edu)
 [![License](https://img.shields.io/badge/license-Proprietary-blue)](#)
