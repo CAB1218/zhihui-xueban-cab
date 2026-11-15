@@ -1,5 +1,5 @@
 """
-AI4EDU 个性化学习建议服务（任务3：理解教学 — 个性化学习建议）
+智慧学伴 个性化学习建议服务（任务3：理解教学 — 个性化学习建议）
 
 赛题要求与实现对应：
     结合学习要求            → 从任务1 的课程大纲里取「学习内容 + 要求 + 认知层次 + 教材出处」
@@ -343,7 +343,7 @@ class LearningAdviceService:
             {
                 "stage": "综合",
                 "count": 3,
-                "desc": "与前置知识组合的综合题（如排序 + 复杂度分析）",
+                "desc": "与本知识点前置/相关知识点组合的综合题，需写出完整过程",
                 "pass_line": "能写出完整步骤，≥2 题正确",
             },
         ]
@@ -550,6 +550,18 @@ class LearningAdviceService:
                     t["knowledge_point"] != x["knowledge_point"] for t in targets
                 ):
                     targets.insert(0, dict(x, status=x.get("status")))
+        # 没有「需巩固/基本掌握」可补时，对已达「掌握良好」的学生给拔高方案，
+        # 否则学得好的学生只会拿到一句「暂无需巩固」的空方案
+        enrich = False
+        if not targets and not focus:
+            goods = [
+                x
+                for x in report["knowledge_points"]
+                if x.get("status") == "good" and (x.get("attempts") or 0) >= 3
+            ]
+            if goods:
+                targets.append(dict(min(goods, key=lambda x: x.get("accuracy") or 0)))
+                enrich = True
 
         items: List[Dict[str, Any]] = []
         order = 1
@@ -563,6 +575,51 @@ class LearningAdviceService:
 
         # 先后安排：大纲单元顺序 + 先修关系（拓扑）
         items = self._order_items(items, outline)
+
+        # 拔高方案：措辞与验收标准要跟「补基础」区分开
+        if enrich:
+            for it in items:
+                it["status"] = "enrich"
+                it["status_label"] = "掌握良好（拔高）"
+                it["problem"] = (
+                    f"{it['evidence']['text']}，已稳定达到「掌握良好」，本步不重复基础训练，改为迁移与拔高"
+                )
+                it["goal"] = (
+                    f"在已掌握基础上做迁移运用：能说明「{it['knowledge_point']}」的适用边界，"
+                    "并解决与前置/后续知识点组合的综合题"
+                )
+                it["acceptance"] = "综合题 3 题全对且能口述解题思路；能举出 1 个该知识点的易错反例"
+                it["content"] = [
+                    "直接做 2 道综合题并写出完整过程，定位「会做但慢 / 会做但说不清」的断点",
+                    "对比同题的不同解法，说明哪种更稳、为什么，形成自己的方法选择标准",
+                    "总结该知识点的适用边界与易错反例，作为后续复习的检查表",
+                ]
+                practices = it.get("practices") or []
+                if practices:
+                    practices[0] = {
+                        "stage": "迁移",
+                        "count": 3,
+                        "desc": f"「{it['knowledge_point']}」跨情境迁移题：把方法用到新的问题情境中",
+                        "pass_line": "正确 ≥ 2 题且能说清思路，否则回看该知识点的例题",
+                    }
+                it["activity"] = (
+                    "给同伴讲一道综合题，重点讲「为什么这样想」而不是只讲步骤；讲不通的地方就是理解不到位的地方"
+                )
+                mats = [m for m in (it.get("materials") or []) if "错题重练卷" not in (m.get("title") or "")]
+                mats.append(
+                    {
+                        "kind": "rule",
+                        "title": f"「{it['knowledge_point']}」拓展题组",
+                        "detail": "综合题与开放题为主，侧重方法迁移与思路表达，不重复基础训练",
+                        "rule": "筛选条件：该知识点与已学知识点组合的综合题，上限 6 题",
+                        "source": "按规则登记",
+                    }
+                )
+                it["materials"] = mats
+                it["teacher_tip"] = (
+                    "该生已掌握本知识点，诊断段可跳过，直接做变式与综合；时间紧时只保留综合题 3 题即可"
+                )
+                it["reason"] = it["reason"].replace("判定为掌握良好", "已掌握，按拔高处理")
 
         # 证据不足 → 补充观察建议，而不是硬给补强方案
         observation_items: List[Dict[str, Any]] = []
@@ -598,6 +655,11 @@ class LearningAdviceService:
             goal_overview = (
                 f"当前可判断作答仅 {attempts} 条，证据不足以给出「补什么」的结论。"
                 "本方案以「补充观察 + 基础诊断」为主：先补齐 3 次以上针对性练习，再据结果调整补强内容。"
+            )
+        elif enrich and items:
+            goal_overview = (
+                f"该生各知识点均已达「掌握良好」，无需补基础。用 {duration_days} 天做迁移与拔高："
+                "把已掌握的方法用到变式与综合题上，并练习讲清解题思路。"
             )
         elif items:
             kps = "、".join(i["knowledge_point"] for i in items)
